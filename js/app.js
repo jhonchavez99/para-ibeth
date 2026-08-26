@@ -1988,6 +1988,7 @@ function initGalaxyPageListeners() {
   // Cosmic Playlist Audio Controller
   const playlistItems = document.querySelectorAll('.playlist-item');
   const vinylDisc = document.querySelector('.vinyl-disc');
+  const spotifyIframe = document.querySelector('iframe[src*="spotify.com"]');
 
   if (!state.playlistAudio) {
     state.playlistAudio = new Audio();
@@ -1996,10 +1997,18 @@ function initGalaxyPageListeners() {
   playlistItems.forEach(item => {
     const playBtn = item.querySelector('.play-btn-cosmic');
     const songSrc = item.dataset.songSrc;
+    const spotifyId = item.dataset.spotifyId;
 
     const togglePlaySong = (e) => {
+      // If clicking Spotify link, don't trigger internal player
+      if (e?.target?.closest('a')) return;
       e?.preventDefault();
       const isPlayingCurrent = item.classList.contains('playing');
+
+      // Update embedded Spotify player if present
+      if (spotifyIframe && spotifyId) {
+        spotifyIframe.src = `https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator&theme=0`;
+      }
 
       // Reset all items UI
       playlistItems.forEach(i => {
@@ -2052,7 +2061,7 @@ function initGalaxyPageListeners() {
     { id: 'virgo-line-3', from: 'josue', to: 'jacqui' },
     { id: 'virgo-line-4', from: 'josue', to: 'star5' },
     { id: 'virgo-line-5', from: 'star5', to: 'star7' },
-    { id: 'virgo-line-6', from: 'josue', to: 'star6' },
+    { id: 'virgo-line-6', from: 'josue', to: 'ara' },
     { id: 'virgo-line-7', from: 'josue', to: 'final' }
   ];
 
@@ -2061,6 +2070,8 @@ function initGalaxyPageListeners() {
     'kelly': 'https://drive.google.com/file/d/1ik5e240qFXZZQ8GVM1GuznsAHGJMJR2B/view?usp=sharing',
     'josue': 'https://drive.google.com/file/d/17uTMv51_V9nBcR_eagSRra-UwxGLuymt/view?usp=sharing',
     'jacqui': 'https://drive.google.com/file/d/1isNk7Ls-WJx3Q0z1Zmhr9A40A-ZuO3r1/view?usp=sharing',
+    'star6': 'https://drive.google.com/file/d/1sYNMZhsNR-lk6X2wovI4osadrF9bpqlD/view?usp=sharing',
+    'ara': 'https://drive.google.com/file/d/1sYNMZhsNR-lk6X2wovI4osadrF9bpqlD/view?usp=sharing',
     'final': 'https://drive.google.com/file/d/1Zk3UEirsdhFQwqHHu3TW41ElKeLB2mcj/view?usp=sharing'
   };
 
