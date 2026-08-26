@@ -1118,7 +1118,6 @@ function initEventListeners() {
   // Narrative Journey Controls
   document.getElementById('narrative-btn-next')?.addEventListener('click', handleNarrativeNext);
   document.getElementById('narrative-btn-back')?.addEventListener('click', handleNarrativeBack);
-  document.getElementById('narrative-btn-audio')?.addEventListener('click', toggleNarrativeAudio);
 
 
   // Studio Inputs
@@ -2140,7 +2139,8 @@ function initGalaxyPageListeners() {
       document.getElementById('modal-photo-badge').textContent = starLabel;
       document.getElementById('modal-photo-title').textContent = title;
       document.getElementById('modal-photo-date').textContent = date;
-      document.getElementById('modal-photo-note').textContent = `“${note}”`;
+      const noteEl = document.getElementById('modal-photo-note');
+      if (noteEl) noteEl.innerHTML = note || '';
 
       // Setup Google Drive Direct Link Button
       const directDriveUrl = DRIVE_LINKS[starId];
@@ -2151,8 +2151,11 @@ function initGalaxyPageListeners() {
         driveBtn.style.display = 'none';
       }
 
+      const mediaContainer = document.getElementById('modal-media-container');
+
       // Handle Master Final Star specifically (Play Google Drive Embed & direct stream)
       if (node.id === 'final-master-star') {
+        if (mediaContainer) mediaContainer.style.display = 'block';
         if (videoIframe) {
           videoIframe.src = videoEmbed || 'https://drive.google.com/file/d/1Zk3UEirsdhFQwqHHu3TW41ElKeLB2mcj/preview';
           videoIframe.style.display = 'block';
@@ -2166,6 +2169,10 @@ function initGalaxyPageListeners() {
       }
       // Priority 1: Native HTML5 Video Player
       else if (videoSrc) {
+        if (mediaContainer) {
+          mediaContainer.style.display = 'block';
+          mediaContainer.style.maxHeight = '60vh';
+        }
         if (videoPlayer) {
           videoPlayer.src = videoSrc;
           videoPlayer.style.display = 'block';
@@ -2188,6 +2195,10 @@ function initGalaxyPageListeners() {
       }
       // Priority 2: Google Drive Embed Iframe Fallback
       else if (videoEmbed) {
+        if (mediaContainer) {
+          mediaContainer.style.display = 'block';
+          mediaContainer.style.maxHeight = '60vh';
+        }
         if (videoIframe) {
           videoIframe.src = videoEmbed;
           videoIframe.style.display = 'block';
@@ -2201,6 +2212,10 @@ function initGalaxyPageListeners() {
       }
       // Priority 3: Photo Image
       else if (img) {
+        if (mediaContainer) {
+          mediaContainer.style.display = 'block';
+          mediaContainer.style.maxHeight = '48vh';
+        }
         if (photoImg) {
           photoImg.src = img;
           photoImg.style.display = 'block';
@@ -2214,7 +2229,10 @@ function initGalaxyPageListeners() {
           videoIframe.src = '';
           videoIframe.style.display = 'none';
         }
-      } else {
+      }
+      // Priority 4: Pure Text Letter without video/photo
+      else {
+        if (mediaContainer) mediaContainer.style.display = 'none';
         if (videoPlayer) {
           videoPlayer.pause();
           videoPlayer.src = '';
