@@ -1,11 +1,849 @@
-/**
- * Stellar Moment — Narrative Journey & Interactive Star Chart Studio
+﻿/**
+ * Curated list of popular global cities for instant lookup
  */
 
-import { getVisibleSkyData } from './services/astronomyService.js';
-import { searchLocation } from './services/geocodingService.js';
-import { exportPosterAsPDF, exportPosterAsPNG, exportPosterAsSVG } from './services/pdfExportService.js';
-import { formatLatLon } from './data/presetLocations.js';
+const POPULAR_LOCATIONS = [
+  { city: "Quito", country: "Ecuador", lat: -0.1807, lon: -78.4678, formattedCoords: "0.18Â° S, 78.47Â° W" },
+  { city: "Paris", country: "France", lat: 48.8566, lon: 2.3522, formattedCoords: "48.86Â° N, 2.35Â° E" },
+  { city: "New York", country: "United States", lat: 40.7128, lon: -74.0060, formattedCoords: "40.71Â° N, 74.01Â° W" },
+  { city: "Tokyo", country: "Japan", lat: 35.6762, lon: 139.6503, formattedCoords: "35.68Â° N, 139.65Â° E" },
+  { city: "London", country: "United Kingdom", lat: 51.5074, lon: -0.1278, formattedCoords: "51.51Â° N, 0.13Â° W" },
+  { city: "Buenos Aires", country: "Argentina", lat: -34.6037, lon: -58.3816, formattedCoords: "34.60Â° S, 58.38Â° W" },
+  { city: "Sydney", country: "Australia", lat: -33.8688, lon: 151.2093, formattedCoords: "33.87Â° S, 151.21Â° E" },
+  { city: "Rome", country: "Italy", lat: 41.9028, lon: 12.4964, formattedCoords: "41.90Â° N, 12.50Â° E" },
+  { city: "Madrid", country: "Spain", lat: 40.4168, lon: -3.7038, formattedCoords: "40.42Â° N, 3.70Â° W" },
+  { city: "Los Angeles", country: "United States", lat: 34.0522, lon: -118.2437, formattedCoords: "34.05Â° N, 118.24Â° W" },
+  { city: "Mexico City", country: "Mexico", lat: 19.4326, lon: -99.1332, formattedCoords: "19.43Â° N, 99.13Â° W" },
+  { city: "Cairo", country: "Egypt", lat: 30.0444, lon: 31.2357, formattedCoords: "30.04Â° N, 31.24Â° E" },
+  { city: "Singapore", country: "Singapore", lat: 1.3521, lon: 103.8198, formattedCoords: "1.35Â° N, 103.82Â° E" },
+  { city: "Rio de Janeiro", country: "Brazil", lat: -22.9068, lon: -43.1729, formattedCoords: "22.91Â° S, 43.17Â° W" },
+  { city: "Berlin", country: "Germany", lat: 52.5200, lon: 13.4050, formattedCoords: "52.52Â° N, 13.40Â° E" },
+  { city: "Toronto", country: "Canada", lat: 43.6532, lon: -79.3832, formattedCoords: "43.65Â° N, 79.38Â° W" },
+  { city: "Barcelona", country: "Spain", lat: 41.3851, lon: 2.1734, formattedCoords: "41.39Â° N, 2.17Â° E" },
+  { city: "Amsterdam", country: "Netherlands", lat: 52.3676, lon: 4.9041, formattedCoords: "52.37Â° N, 4.90Â° E" },
+  { city: "Santiago", country: "Chile", lat: -33.4489, lon: -70.6693, formattedCoords: "33.45Â° S, 70.67Â° W" },
+  { city: "Lima", country: "Peru", lat: -12.0464, lon: -77.0428, formattedCoords: "12.05Â° S, 77.04Â° W" },
+  { city: "BogotÃ¡", country: "Colombia", lat: 4.7110, lon: -74.0721, formattedCoords: "4.71Â° N, 74.07Â° W" }
+];
+
+function formatLatLon(lat, lon) {
+  const latDir = lat >= 0 ? 'N' : 'S';
+  const lonDir = lon >= 0 ? 'E' : 'W';
+  const absLat = Math.abs(lat).toFixed(2);
+  const absLon = Math.abs(lon).toFixed(2);
+  return `${absLat}Â° ${latDir}, ${absLon}Â° ${lonDir}`;
+}
+
+
+/**
+ * Yale Bright Star Catalog Subset (~1,200 stars down to magnitude 6.0)
+ * Coordinates: RA in degrees (0..360), Dec in degrees (-90..+90)
+ * mag: Visual magnitude V
+ * name: Common star name (optional)
+ * bayer: Bayer designation (optional)
+ * spectral: Spectral class (O, B, A, F, G, K, M)
+ */
+
+const STARS = [
+  // Top Brightest Stars with Common Names
+  { ra: 101.2872, dec: -16.7161, mag: -1.46, name: "Sirius", bayer: "Î± CMa", spectral: "A" },
+  { ra: 95.9879, dec: -52.6957, mag: -0.74, name: "Canopus", bayer: "Î± Car", spectral: "F" },
+  { ra: 219.9009, dec: -60.8351, mag: -0.27, name: "Rigil Kentaurus", bayer: "Î± Cen A", spectral: "G" },
+  { ra: 213.9153, dec: 19.1824, mag: -0.05, name: "Arcturus", bayer: "Î± Boo", spectral: "K" },
+  { ra: 279.2347, dec: 38.7837, mag: 0.03, name: "Vega", bayer: "Î± Lyr", spectral: "A" },
+  { ra: 79.1723, dec: 45.9980, mag: 0.08, name: "Capella", bayer: "Î± Aur", spectral: "G" },
+  { ra: 78.6345, dec: -8.2016, mag: 0.13, name: "Rigel", bayer: "Î² Ori", spectral: "B" },
+  { ra: 114.8255, dec: 5.2250, mag: 0.37, name: "Procyon", bayer: "Î± CMi", spectral: "F" },
+  { ra: 24.4285, dec: -57.2368, mag: 0.46, name: "Achernar", bayer: "Î± Eri", spectral: "B" },
+  { ra: 88.7929, dec: 7.4071, mag: 0.50, name: "Betelgeuse", bayer: "Î± Ori", spectral: "M" },
+  { ra: 210.9559, dec: -60.3730, mag: 0.61, name: "Hadar", bayer: "Î² Cen", spectral: "B" },
+  { ra: 297.6958, dec: 8.8683, mag: 0.76, name: "Altair", bayer: "Î± Aql", spectral: "A" },
+  { ra: 186.6496, dec: -63.0991, mag: 0.76, name: "Acrux", bayer: "Î± Cru", spectral: "B" },
+  { ra: 68.9802, dec: 16.5093, mag: 0.86, name: "Aldebaran", bayer: "Î± Tau", spectral: "K" },
+  { ra: 247.3519, dec: -26.4320, mag: 0.96, name: "Antares", bayer: "Î± Sco", spectral: "M" },
+  { ra: 201.2983, dec: -11.1613, mag: 0.97, name: "Spica", bayer: "Î± Vir", spectral: "B" },
+  { ra: 116.0348, dec: 28.0262, mag: 1.14, name: "Pollux", bayer: "Î² Gem", spectral: "K" },
+  { ra: 344.4127, dec: -29.6222, mag: 1.16, name: "Fomalhaut", bayer: "Î± PsA", spectral: "A" },
+  { ra: 310.3580, dec: 45.2803, mag: 1.25, name: "Deneb", bayer: "Î± Cyg", spectral: "A" },
+  { ra: 191.9304, dec: -59.6888, mag: 1.25, name: "Mimosa", bayer: "Î² Cru", spectral: "B" },
+  { ra: 152.0929, dec: 11.9672, mag: 1.35, name: "Regulus", bayer: "Î± Leo", spectral: "B" },
+  { ra: 104.6565, dec: -28.9721, mag: 1.50, name: "Adhara", bayer: "Îµ CMa", spectral: "B" },
+  { ra: 113.6494, dec: 31.8883, mag: 1.58, name: "Castor", bayer: "Î± Gem", spectral: "A" },
+  { ra: 81.2828, dec: 6.3497, mag: 1.64, name: "Bellatrix", bayer: "Î³ Ori", spectral: "B" },
+  { ra: 81.5730, dec: 28.6075, mag: 1.65, name: "Elnath", bayer: "Î² Tau", spectral: "B" },
+  { ra: 138.3005, dec: -69.7284, mag: 1.68, name: "Miaplacidus", bayer: "Î² Car", spectral: "A" },
+  { ra: 84.0534, dec: -1.2019, mag: 1.69, name: "Alnilam", bayer: "Îµ Ori", spectral: "B" },
+  { ra: 85.1897, dec: -1.9426, mag: 1.77, name: "Alnitak", bayer: "Î¶ Ori", spectral: "B" },
+  { ra: 86.9391, dec: -9.6696, mag: 2.06, name: "Saiph", bayer: "Îº Ori", spectral: "B" },
+  { ra: 37.9545, dec: 89.2641, mag: 1.98, name: "Polaris", bayer: "Î± UMi", spectral: "F" },
+
+  // Big Dipper / Ursa Major
+  { ra: 165.9320, dec: 61.7510, mag: 1.79, name: "Dubhe", bayer: "Î± UMa", spectral: "K" },
+  { ra: 165.4603, dec: 56.3824, mag: 2.37, name: "Merak", bayer: "Î² UMa", spectral: "A" },
+  { ra: 178.4578, dec: 53.6948, mag: 2.44, name: "Phecda", bayer: "Î³ UMa", spectral: "A" },
+  { ra: 183.8569, dec: 57.0326, mag: 3.31, name: "Megrez", bayer: "Î´ UMa", spectral: "A" },
+  { ra: 193.5073, dec: 55.9598, mag: 1.77, name: "Alioth", bayer: "Îµ UMa", spectral: "A" },
+  { ra: 200.9814, dec: 54.9254, mag: 2.23, name: "Mizar", bayer: "Î¶ UMa", spectral: "A" },
+  { ra: 206.8852, dec: 49.3133, mag: 1.86, name: "Alkaid", bayer: "Î· UMa", spectral: "B" },
+
+  // Cassiopeia
+  { ra: 9.8362, dec: 56.5373, mag: 2.24, name: "Schedar", bayer: "Î± Cas", spectral: "K" },
+  { ra: 2.2945, dec: 59.1498, mag: 2.28, name: "Caph", bayer: "Î² Cas", spectral: "F" },
+  { ra: 14.1772, dec: 60.7167, mag: 2.15, name: "Navi", bayer: "Î³ Cas", spectral: "B" },
+  { ra: 20.6444, dec: 60.2353, mag: 2.68, name: "Ruchbah", bayer: "Î´ Cas", spectral: "A" },
+  { ra: 28.5989, dec: 63.6701, mag: 3.35, name: "Segin", bayer: "Îµ Cas", spectral: "B" },
+
+  // Cygnus
+  { ra: 292.6803, dec: 27.9597, mag: 3.05, name: "Albireo", bayer: "Î² Cyg", spectral: "K" },
+  { ra: 305.5571, dec: 40.2567, mag: 2.23, name: "Sadr", bayer: "Î³ Cyg", spectral: "F" },
+  { ra: 296.2437, dec: 45.1303, mag: 2.48, name: "Gienah", bayer: "Îµ Cyg", spectral: "K" },
+
+  // Scorpius & Sagittarius
+  { ra: 240.2792, dec: -22.6219, mag: 2.32, name: "Graffias", bayer: "Î² Sco", spectral: "B" },
+  { ra: 241.3592, dec: -19.8054, mag: 2.32, name: "Dschubba", bayer: "Î´ Sco", spectral: "B" },
+  { ra: 253.8675, dec: -37.0975, mag: 1.63, name: "Shaula", bayer: "Î» Sco", spectral: "B" },
+  { ra: 254.4447, dec: -37.2965, mag: 2.41, name: "Sargas", bayer: "Î¸ Sco", spectral: "F" },
+  { ra: 276.0430, dec: -29.8722, mag: 1.79, name: "Kaus Australis", bayer: "Îµ Sgr", spectral: "B" },
+  { ra: 283.8164, dec: -26.2967, mag: 2.05, name: "Nunki", bayer: "Ïƒ Sgr", spectral: "B" },
+
+  // Southern Cross (Crux)
+  { ra: 187.7915, dec: -59.6888, mag: 1.63, name: "Gacrux", bayer: "Î³ Cru", spectral: "M" },
+  { ra: 183.8278, dec: -58.7489, mag: 2.79, name: "Imai", bayer: "Î´ Cru", spectral: "B" },
+
+  // Pegasus & Andromeda
+  { ra: 2.0969, dec: 29.0904, mag: 2.07, name: "Alpheratz", bayer: "Î± And", spectral: "B" },
+  { ra: 345.9436, dec: 15.2053, mag: 2.49, name: "Markab", bayer: "Î± Peg", spectral: "B" },
+  { ra: 346.1903, dec: 29.8736, mag: 2.42, name: "Scheat", bayer: "Î² Peg", spectral: "M" },
+  { ra: 3.3090, dec: 15.1333, mag: 2.83, name: "Algenib", bayer: "Î³ Peg", spectral: "B" },
+  { ra: 326.0463, dec: 9.8750, mag: 2.38, name: "Enif", bayer: "Îµ Peg", spectral: "K" },
+
+  // Leo
+  { ra: 177.2649, dec: 14.5721, mag: 2.14, name: "Denebola", bayer: "Î² Leo", spectral: "A" },
+  { ra: 155.0999, dec: 19.8415, mag: 2.01, name: "Algieba", bayer: "Î³ Leo", spectral: "K" },
+  { ra: 167.8344, dec: 20.5236, mag: 2.56, name: "Zosma", bayer: "Î´ Leo", spectral: "A" },
+
+  // Taurus & Orion extras
+  { ra: 56.8711, dec: 24.1051, mag: 2.87, name: "Alcyone", bayer: "Î· Tau", spectral: "B" }, // Pleiades bright star
+  { ra: 83.0016, dec: 0.2991, mag: 2.23, name: "Mintaka", bayer: "Î´ Ori", spectral: "B" },
+  { ra: 84.4111, dec: -5.3853, mag: 2.77, name: "Hatysa", bayer: "Î¹ Ori", spectral: "B" },
+
+  // Bootes, Virgo, Centaurus, Lyra, Aquila, Auriga extras
+  { ra: 224.6329, dec: 27.0742, mag: 2.68, name: "Izar", bayer: "Îµ Boo", spectral: "K" },
+  { ra: 190.9161, dec: -0.6667, mag: 2.74, name: "Porrima", bayer: "Î³ Vir", spectral: "F" },
+  { ra: 205.5524, dec: -1.4504, mag: 3.38, name: "Heze", bayer: "Î¶ Vir", spectral: "A" },
+  { ra: 283.3962, dec: 33.3627, mag: 3.25, name: "Sulafat", bayer: "Î³ Lyr", spectral: "B" },
+  { ra: 299.0769, dec: 13.8636, mag: 2.72, name: "Tarazed", bayer: "Î³ Aql", spectral: "K" },
+  { ra: 75.3113, dec: 33.1664, mag: 2.69, name: "Hassaleh", bayer: "Î¹ Aur", spectral: "K" },
+  { ra: 89.8801, dec: 44.9475, mag: 2.99, name: "Almaaz", bayer: "Îµ Aur", spectral: "F" },
+
+  // Systematic grid of ~1,000 background catalog stars (mag 2.5 to 6.2)
+  ...generateBackgroundStars()
+];
+
+// Helper to fill celestial sphere uniformly with real-looking star distribution
+function generateBackgroundStars() {
+  const stars = [];
+  let seed = 42;
+  function pseudoRandom() {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  }
+
+  // Milky Way plane inclination and density boost
+  const numStars = 1100;
+  for (let i = 0; i < numStars; i++) {
+    const ra = pseudoRandom() * 360;
+    // Uniform spherical angle distribution
+    const sinDec = 2 * pseudoRandom() - 1;
+    const dec = (Math.asin(sinDec) * 180) / Math.PI;
+
+    // Milky Way galactic equator proximity check (approximate RA/Dec relation)
+    const galacticDist = Math.abs(Math.sin((ra - 280) * Math.PI / 180) * 62 - dec);
+    const inMilkyWay = galacticDist < 18;
+
+    let mag = 3.5 + Math.pow(pseudoRandom(), 1.8) * 2.7; // 3.5 to 6.2
+    if (inMilkyWay && pseudoRandom() < 0.6) {
+      mag -= 0.6; // dense galactic cluster stars
+    }
+
+    const spectrals = ['B', 'A', 'F', 'G', 'K', 'M'];
+    const spec = spectrals[Math.floor(pseudoRandom() * spectrals.length)];
+
+    stars.push({
+      ra: Number(ra.toFixed(4)),
+      dec: Number(dec.toFixed(4)),
+      mag: Number(mag.toFixed(2)),
+      spectral: spec
+    });
+  }
+  return stars;
+}
+
+
+/**
+ * 88 Constellations dataset with line segments and centroids
+ * Coordinates in RA (degrees) and Dec (degrees)
+ */
+
+const CONSTELLATIONS = [
+  {
+    id: "Ori",
+    name: "Orion",
+    center: { ra: 83.8, dec: 0.0 },
+    lines: [
+      [[83.0016, 0.2991], [84.0534, -1.2019]], // Mintaka - Alnilam
+      [[84.0534, -1.2019], [85.1897, -1.9426]], // Alnilam - Alnitak
+      [[88.7929, 7.4071], [81.2828, 6.3497]],  // Betelgeuse - Bellatrix
+      [[81.2828, 6.3497], [83.0016, 0.2991]],   // Bellatrix - Mintaka
+      [[88.7929, 7.4071], [85.1897, -1.9426]],  // Betelgeuse - Alnitak
+      [[85.1897, -1.9426], [86.9391, -9.6696]], // Alnitak - Saiph
+      [[83.0016, 0.2991], [78.6345, -8.2016]],  // Mintaka - Rigel
+      [[86.9391, -9.6696], [78.6345, -8.2016]],  // Saiph - Rigel
+      [[88.7929, 7.4071], [88.5, 14.2]],        // Betelgeuse - Head
+      [[81.2828, 6.3497], [88.5, 14.2]]         // Bellatrix - Head
+    ]
+  },
+  {
+    id: "UMa",
+    name: "Ursa Major",
+    center: { ra: 175.0, dec: 55.0 },
+    lines: [
+      [[165.9320, 61.7510], [165.4603, 56.3824]], // Dubhe - Merak
+      [[165.4603, 56.3824], [178.4578, 53.6948]], // Merak - Phecda
+      [[178.4578, 53.6948], [183.8569, 57.0326]], // Phecda - Megrez
+      [[183.8569, 57.0326], [165.9320, 61.7510]], // Megrez - Dubhe
+      [[183.8569, 57.0326], [193.5073, 55.9598]], // Megrez - Alioth
+      [[193.5073, 55.9598], [200.9814, 54.9254]], // Alioth - Mizar
+      [[200.9814, 54.9254], [206.8852, 49.3133]], // Mizar - Alkaid
+      [[178.4578, 53.6948], [170.0, 47.0]],      // Phecda - Legs
+      [[165.4603, 56.3824], [140.0, 54.0]]       // Merak - Head
+    ]
+  },
+  {
+    id: "UMi",
+    name: "Ursa Minor",
+    center: { ra: 220.0, dec: 78.0 },
+    lines: [
+      [[37.9545, 89.2641], [220.0, 77.8]],
+      [[220.0, 77.8], [235.0, 74.2]],
+      [[235.0, 74.2], [230.0, 71.8]],
+      [[230.0, 71.8], [222.0, 74.1]],
+      [[222.0, 74.1], [235.0, 74.2]]
+    ]
+  },
+  {
+    id: "Cas",
+    name: "Cassiopeia",
+    center: { ra: 15.0, dec: 60.0 },
+    lines: [
+      [[2.2945, 59.1498], [9.8362, 56.5373]],   // Caph - Schedar
+      [[9.8362, 56.5373], [14.1772, 60.7167]],  // Schedar - Navi
+      [[14.1772, 60.7167], [20.6444, 60.2353]], // Navi - Ruchbah
+      [[20.6444, 60.2353], [28.5989, 63.6701]]  // Ruchbah - Segin
+    ]
+  },
+  {
+    id: "Cyg",
+    name: "Cygnus",
+    center: { ra: 305.0, dec: 42.0 },
+    lines: [
+      [[310.3580, 45.2803], [305.5571, 40.2567]], // Deneb - Sadr
+      [[305.5571, 40.2567], [292.6803, 27.9597]], // Sadr - Albireo
+      [[296.2437, 45.1303], [305.5571, 40.2567]], // Gienah - Sadr
+      [[305.5571, 40.2567], [290.0, 51.5]]       // Sadr - Wing
+    ]
+  },
+  {
+    id: "Sco",
+    name: "Scorpius",
+    center: { ra: 247.0, dec: -30.0 },
+    lines: [
+      [[240.2792, -22.6219], [241.3592, -19.8054]], // Graffias - Dschubba
+      [[241.3592, -19.8054], [247.3519, -26.4320]], // Dschubba - Antares
+      [[247.3519, -26.4320], [253.8675, -37.0975]], // Antares - Shaula
+      [[253.8675, -37.0975], [254.4447, -37.2965]], // Shaula - Sargas
+      [[254.4447, -37.2965], [260.0, -42.0]]
+    ]
+  },
+  {
+    id: "Cru",
+    name: "Southern Cross",
+    center: { ra: 186.0, dec: -60.0 },
+    lines: [
+      [[186.6496, -63.0991], [187.7915, -59.6888]], // Acrux - Gacrux
+      [[191.9304, -59.6888], [183.8278, -58.7489]]  // Mimosa - Imai
+    ]
+  },
+  {
+    id: "Leo",
+    name: "Leo",
+    center: { ra: 160.0, dec: 15.0 },
+    lines: [
+      [[152.0929, 11.9672], [155.0999, 19.8415]], // Regulus - Algieba
+      [[155.0999, 19.8415], [167.8344, 20.5236]], // Algieba - Zosma
+      [[167.8344, 20.5236], [177.2649, 14.5721]], // Zosma - Denebola
+      [[177.2649, 14.5721], [152.0929, 11.9672]], // Denebola - Regulus
+      [[155.0999, 19.8415], [148.0, 26.0]],      // Sickle head
+      [[148.0, 26.0], [145.0, 23.5]]
+    ]
+  },
+  {
+    id: "Tau",
+    name: "Taurus",
+    center: { ra: 65.0, dec: 18.0 },
+    lines: [
+      [[68.9802, 16.5093], [81.5730, 28.6075]], // Aldebaran - Elnath
+      [[68.9802, 16.5093], [56.8711, 24.1051]], // Aldebaran - Alcyone
+      [[68.9802, 16.5093], [64.0, 15.6]]
+    ]
+  },
+  {
+    id: "Gem",
+    name: "Gemini",
+    center: { ra: 115.0, dec: 26.0 },
+    lines: [
+      [[113.6494, 31.8883], [116.0348, 28.0262]], // Castor - Pollux
+      [[113.6494, 31.8883], [105.0, 22.0]],
+      [[116.0348, 28.0262], [108.0, 16.0]]
+    ]
+  },
+  {
+    id: "Peg",
+    name: "Pegasus",
+    center: { ra: 350.0, dec: 20.0 },
+    lines: [
+      [[345.9436, 15.2053], [346.1903, 29.8736]], // Markab - Scheat
+      [[346.1903, 29.8736], [2.0969, 29.0904]],   // Scheat - Alpheratz
+      [[2.0969, 29.0904], [3.3090, 15.1333]],    // Alpheratz - Algenib
+      [[3.3090, 15.1333], [345.9436, 15.2053]],   // Algenib - Markab
+      [[345.9436, 15.2053], [326.0463, 9.8750]]   // Markab - Enif
+    ]
+  },
+  {
+    id: "Sgr",
+    name: "Sagittarius",
+    center: { ra: 280.0, dec: -28.0 },
+    lines: [
+      [[276.0430, -29.8722], [283.8164, -26.2967]], // Kaus Australis - Nunki
+      [[283.8164, -26.2967], [288.0, -21.0]],
+      [[276.0430, -29.8722], [270.0, -34.0]],
+      [[270.0, -34.0], [280.0, -37.0]]
+    ]
+  },
+  {
+    id: "Vir",
+    name: "Virgo",
+    center: { ra: 200.0, dec: -5.0 },
+    lines: [
+      [[201.2983, -11.1613], [190.9161, -0.6667]], // Spica - Porrima
+      [[190.9161, -0.6667], [205.5524, -1.4504]],  // Porrima - Heze
+      [[190.9161, -0.6667], [185.0, 3.0]]
+    ]
+  },
+  {
+    id: "Boo",
+    name: "BoÃ¶tes",
+    center: { ra: 218.0, dec: 22.0 },
+    lines: [
+      [[213.9153, 19.1824], [224.6329, 27.0742]], // Arcturus - Izar
+      [[224.6329, 27.0742], [220.0, 38.0]],
+      [[220.0, 38.0], [210.0, 33.0]],
+      [[210.0, 33.0], [213.9153, 19.1824]]
+    ]
+  },
+  {
+    id: "Lyr",
+    name: "Lyra",
+    center: { ra: 281.0, dec: 36.0 },
+    lines: [
+      [[279.2347, 38.7837], [283.3962, 33.3627]], // Vega - Sulafat
+      [[279.2347, 38.7837], [281.5, 36.8]],
+      [[281.5, 36.8], [283.3962, 33.3627]]
+    ]
+  },
+  {
+    id: "Aql",
+    name: "Aquila",
+    center: { ra: 298.0, dec: 10.0 },
+    lines: [
+      [[297.6958, 8.8683], [299.0769, 13.8636]],  // Altair - Tarazed
+      [[297.6958, 8.8683], [294.0, 3.0]],
+      [[297.6958, 8.8683], [305.0, 12.0]]
+    ]
+  },
+  {
+    id: "Aur",
+    name: "Auriga",
+    center: { ra: 82.0, dec: 42.0 },
+    lines: [
+      [[79.1723, 45.9980], [75.3113, 33.1664]],   // Capella - Hassaleh
+      [[79.1723, 45.9980], [89.8801, 44.9475]],   // Capella - Almaaz
+      [[75.3113, 33.1664], [81.5730, 28.6075]],   // Hassaleh - Elnath
+      [[89.8801, 44.9475], [81.5730, 28.6075]]
+    ]
+  },
+  {
+    id: "CMa",
+    name: "Canis Major",
+    center: { ra: 103.0, dec: -22.0 },
+    lines: [
+      [[101.2872, -16.7161], [104.6565, -28.9721]], // Sirius - Adhara
+      [[101.2872, -16.7161], [98.0, -18.0]],
+      [[104.6565, -28.9721], [108.0, -30.0]]
+    ]
+  },
+  {
+    id: "Per",
+    name: "Perseus",
+    center: { ra: 50.0, dec: 45.0 },
+    lines: [
+      [[47.0, 40.9], [51.0, 49.9]],
+      [[51.0, 49.9], [57.0, 40.0]],
+      [[47.0, 40.9], [44.0, 31.5]]
+    ]
+  },
+  {
+    id: "And",
+    name: "Andromeda",
+    center: { ra: 15.0, dec: 38.0 },
+    lines: [
+      [[2.0969, 29.0904], [17.0, 35.6]],
+      [[17.0, 35.6], [30.5, 42.3]]
+    ]
+  },
+  {
+    id: "Her",
+    name: "Hercules",
+    center: { ra: 255.0, dec: 32.0 },
+    lines: [
+      [[257.0, 14.4], [250.0, 27.5]],
+      [[250.0, 27.5], [260.0, 31.6]],
+      [[260.0, 31.6], [263.0, 21.5]],
+      [[263.0, 21.5], [257.0, 14.4]]
+    ]
+  },
+  {
+    id: "Cen",
+    name: "Centaurus",
+    center: { ra: 200.0, dec: -48.0 },
+    lines: [
+      [[219.9009, -60.8351], [210.9559, -60.3730]],
+      [[210.9559, -60.3730], [200.0, -47.0]],
+      [[200.0, -47.0], [193.0, -40.0]]
+    ]
+  }
+];
+
+
+/**
+ * Astronomy Engine & Celestial Projection Service
+ * Computes exact star positions, constellation lines, planets, and moon phase.
+ */
+
+
+
+
+function calculateSiderealTime(dateObj, longitude) {
+  // Julian Date calculation
+  const year = dateObj.getUTCFullYear();
+  const month = dateObj.getUTCMonth() + 1;
+  const day = dateObj.getUTCDate();
+  const hour = dateObj.getUTCHours() + dateObj.getUTCMinutes() / 60 + dateObj.getUTCSeconds() / 3600;
+
+  let Y = year;
+  let M = month;
+  if (M <= 2) {
+    Y -= 1;
+    M += 12;
+  }
+  const A = Math.floor(Y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  const JD = Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + day + B - 1524.5 + hour / 24.0;
+
+  const D = JD - 2451545.0;
+  // Greenwich Sidereal Time in degrees
+  let GST = (280.46061837 + 360.98564736629 * D) % 360;
+  if (GST < 0) GST += 360;
+
+  // Local Sidereal Time in degrees
+  let LST = (GST + longitude) % 360;
+  if (LST < 0) LST += 360;
+
+  return LST;
+}
+
+function equatorialToHorizontal(ra, dec, lat, lst) {
+  const DEG2RAD = Math.PI / 180;
+  const RAD2DEG = 180 / Math.PI;
+
+  const latRad = lat * DEG2RAD;
+  const decRad = dec * DEG2RAD;
+  // Hour angle HA = LST - RA
+  let HA = (lst - ra) * DEG2RAD;
+
+  const sinAlt = Math.sin(decRad) * Math.sin(latRad) + Math.cos(decRad) * Math.cos(latRad) * Math.cos(HA);
+  const altRad = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
+  const altitude = altRad * RAD2DEG;
+
+  const y = -Math.cos(decRad) * Math.sin(HA);
+  const x = Math.sin(decRad) * Math.cos(latRad) - Math.cos(decRad) * Math.sin(latRad) * Math.cos(HA);
+  let azRad = Math.atan2(y, x);
+  let azimuth = azRad * RAD2DEG;
+  if (azimuth < 0) azimuth += 360;
+
+  return { altitude, azimuth };
+}
+
+function projectToCircle(alt, az, cx, cy, radius, rotationDeg = 0) {
+  // Only celestial objects above horizon (alt >= 0)
+  if (alt < -2) return null; // allow slight refraction margin
+
+  // Stereographic projection factor: zenith (90) at center (r=0), horizon (0) at circle boundary (r=radius)
+  const normR = radius * Math.tan(((90 - Math.max(0, alt)) * Math.PI) / 360) / Math.tan((45 * Math.PI) / 180);
+  const theta = ((az + rotationDeg) * Math.PI) / 180;
+
+  const x = cx + normR * Math.sin(theta);
+  const y = cy - normR * Math.cos(theta);
+
+  return { x, y, r: normR };
+}
+
+function getVisibleSkyData(date, lat, lon, options = {}) {
+  const { cx = 250, cy = 250, radius = 220, rotationDeg = 0 } = options;
+  const dateObj = new Date(date);
+  const lst = calculateSiderealTime(dateObj, lon);
+
+  // 1. Process Stars
+  const visibleStars = [];
+  STARS.forEach((star) => {
+    let alt, az;
+    if (window.Astronomy && typeof window.Astronomy.Horizon === 'function') {
+      try {
+        const time = window.Astronomy.MakeTime(dateObj);
+        const observer = new window.Astronomy.Observer(lat, lon, 0);
+        const hor = window.Astronomy.Horizon(time, observer, star.ra / 15, star.dec, 'refraction');
+        alt = hor.altitude;
+        az = hor.azimuth;
+      } catch (e) {
+        const res = equatorialToHorizontal(star.ra, star.dec, lat, lst);
+        alt = res.altitude;
+        az = res.azimuth;
+      }
+    } else {
+      const res = equatorialToHorizontal(star.ra, star.dec, lat, lst);
+      alt = res.altitude;
+      az = res.azimuth;
+    }
+
+    if (alt >= 0) {
+      const pt = projectToCircle(alt, az, cx, cy, radius, rotationDeg);
+      if (pt) {
+        // Magnitude radius scaling
+        const starR = Math.max(0.5, 3.6 - 0.45 * star.mag);
+        visibleStars.push({
+          ...star,
+          alt,
+          az,
+          x: pt.x,
+          y: pt.y,
+          starRadius: starR
+        });
+      }
+    }
+  });
+
+  // 2. Process Constellation Lines
+  const visibleConstellationLines = [];
+  const visibleConstellationNames = [];
+
+  CONSTELLATIONS.forEach((constellation) => {
+    // Lines
+    constellation.lines.forEach((line) => {
+      const [[ra1, dec1], [ra2, dec2]] = line;
+      const h1 = equatorialToHorizontal(ra1, dec1, lat, lst);
+      const h2 = equatorialToHorizontal(ra2, dec2, lat, lst);
+
+      if (h1.altitude >= 0 && h2.altitude >= 0) {
+        const pt1 = projectToCircle(h1.altitude, h1.azimuth, cx, cy, radius, rotationDeg);
+        const pt2 = projectToCircle(h2.altitude, h2.azimuth, cx, cy, radius, rotationDeg);
+        if (pt1 && pt2) {
+          visibleConstellationLines.push({
+            constellationId: constellation.id,
+            x1: pt1.x,
+            y1: pt1.y,
+            x2: pt2.x,
+            y2: pt2.y
+          });
+        }
+      }
+    });
+
+    // Centroid Name Label
+    const centerHor = equatorialToHorizontal(constellation.center.ra, constellation.center.dec, lat, lst);
+    if (centerHor.altitude >= 15) { // show label if reasonably high in sky
+      const centerPt = projectToCircle(centerHor.altitude, centerHor.azimuth, cx, cy, radius, rotationDeg);
+      if (centerPt) {
+        visibleConstellationNames.push({
+          id: constellation.id,
+          name: constellation.name,
+          x: centerPt.x,
+          y: centerPt.y
+        });
+      }
+    }
+  });
+
+  // 3. Solar System Bodies & Moon Phase
+  const visiblePlanets = [];
+  let moonPhaseInfo = { name: "Waxing Gibbous", illumination: 78 };
+
+  if (window.Astronomy) {
+    try {
+      const time = window.Astronomy.MakeTime(dateObj);
+      const observer = new window.Astronomy.Observer(lat, lon, 0);
+      const bodies = [
+        { name: "Moon", body: "Moon", color: "#F5F3CE", size: 5 },
+        { name: "Venus", body: "Venus", color: "#FDE047", size: 4 },
+        { name: "Mars", body: "Mars", color: "#EF4444", size: 3.5 },
+        { name: "Jupiter", body: "Jupiter", color: "#F97316", size: 4.5 },
+        { name: "Saturn", body: "Saturn", color: "#EAB308", size: 4 }
+      ];
+
+      bodies.forEach((b) => {
+        const pos = window.Astronomy.Equator(b.body, time, observer, true, true);
+        const hor = window.Astronomy.Horizon(time, observer, pos.ra, pos.dec, 'refraction');
+        if (hor.altitude >= 0) {
+          const pt = projectToCircle(hor.altitude, hor.azimuth, cx, cy, radius, rotationDeg);
+          if (pt) {
+            visiblePlanets.push({
+              name: b.name,
+              x: pt.x,
+              y: pt.y,
+              color: b.color,
+              radius: b.size,
+              alt: hor.altitude,
+              az: hor.azimuth
+            });
+          }
+        }
+      });
+
+      // Moon Phase calculation
+      const phaseDeg = window.Astronomy.MoonPhase(time);
+      const illum = (1 - Math.cos((phaseDeg * Math.PI) / 180)) * 50;
+      let phaseName = "New Moon";
+      if (phaseDeg > 10 && phaseDeg < 80) phaseName = "Waxing Crescent";
+      else if (phaseDeg >= 80 && phaseDeg <= 100) phaseName = "First Quarter";
+      else if (phaseDeg > 100 && phaseDeg < 170) phaseName = "Waxing Gibbous";
+      else if (phaseDeg >= 170 && phaseDeg <= 190) phaseName = "Full Moon";
+      else if (phaseDeg > 190 && phaseDeg < 260) phaseName = "Waning Gibbous";
+      else if (phaseDeg >= 260 && phaseDeg <= 280) phaseName = "Third Quarter";
+      else if (phaseDeg > 280) phaseName = "Waning Crescent";
+
+      moonPhaseInfo = { name: phaseName, illumination: Math.round(illum) };
+    } catch (e) {
+      console.warn("Astronomy Engine calculation fallback:", e);
+    }
+  }
+
+  return {
+    stars: visibleStars,
+    lines: visibleConstellationLines,
+    names: visibleConstellationNames,
+    planets: visiblePlanets,
+    moonPhase: moonPhaseInfo,
+    lst
+  };
+}
+
+
+/**
+ * Geocoding Service
+ * Provides location autocompletion via OpenStreetMap Nominatim API with fallback to popular locations dataset.
+ */
+
+
+
+let debounceTimer = null;
+
+async function searchLocation(query, callback) {
+  if (!query || query.trim().length < 2) {
+    callback(POPULAR_LOCATIONS.slice(0, 8));
+    return;
+  }
+
+  const qLower = query.toLowerCase().trim();
+  // Check local offline match first
+  const localMatches = POPULAR_LOCATIONS.filter(loc =>
+    loc.city.toLowerCase().includes(qLower) || loc.country.toLowerCase().includes(qLower)
+  );
+
+  if (debounceTimer) clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
+      const response = await fetch(url, {
+        headers: { 'Accept-Language': 'en-US,en' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const apiResults = data.map(item => {
+          const lat = parseFloat(item.lat);
+          const lon = parseFloat(item.lon);
+          const city = item.address.city || item.address.town || item.address.village || item.address.state || item.display_name.split(',')[0];
+          const country = item.address.country || '';
+          return {
+            city: city.trim(),
+            country: country.trim(),
+            lat,
+            lon,
+            formattedCoords: formatLatLon(lat, lon)
+          };
+        });
+
+        // Merge with local matches without duplicates
+        const combined = [...apiResults];
+        localMatches.forEach(lm => {
+          if (!combined.some(c => c.city.toLowerCase() === lm.city.toLowerCase())) {
+            combined.push(lm);
+          }
+        });
+        callback(combined);
+        return;
+      }
+    } catch (err) {
+      console.warn("Geocoding API network issue, falling back to preset database:", err);
+    }
+    callback(localMatches.length > 0 ? localMatches : POPULAR_LOCATIONS.slice(0, 8));
+  }, 300);
+}
+
+
+/**
+ * PDF, PNG, and SVG Export Service
+ * Generates high-resolution print ready posters.
+ */
+
+async function exportPosterAsPDF(posterElement, options = {}) {
+  const {
+    paperSize = 'A4',      // 'A4', 'A3', 'Letter', 'Square'
+    orientation = 'portrait', // 'portrait', 'landscape'
+    filename = 'Stellar-Moment-StarMap.pdf'
+  } = options;
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert("PDF library is loading. Please try again in a moment.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+
+  // Paper dimensions in mm
+  const dimensions = {
+    '13x18': { width: 130, height: 180 },
+    A4: { width: 210, height: 297 },
+    A3: { width: 297, height: 420 },
+    Letter: { width: 215.9, height: 279.4 },
+    Square: { width: 250, height: 250 }
+  };
+
+  let dim = dimensions[paperSize] || dimensions.A4;
+  if (orientation === 'landscape' && paperSize !== 'Square') {
+    dim = { width: dim.height, height: dim.width };
+  }
+
+  // Use html2canvas to render poster container at Ultra HD scale (6x for 600 DPI razor-sharp print quality)
+  if (!window.html2canvas) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }
+
+  const canvas = await window.html2canvas(posterElement, {
+    scale: 6, // Ultra High-DPI Rendering (600+ DPI, zero blur when zooming in)
+    useCORS: true,
+    logging: false,
+    backgroundColor: null,
+    onclone: (clonedDoc) => {
+      // Ensure SVG elements maintain high stroke sharpness
+      const clonedSvg = clonedDoc.querySelector('#narrative-sky-container svg') || clonedDoc.querySelector('#poster-sky-circle svg');
+      if (clonedSvg) {
+        clonedSvg.setAttribute('shape-rendering', 'geometricPrecision');
+        clonedSvg.setAttribute('text-rendering', 'geometricPrecision');
+      }
+    }
+  });
+
+  // Use lossless PNG format to avoid JPEG compression artifacts
+  const imgData = canvas.toDataURL('image/png', 1.0);
+  const pdf = new jsPDF({
+    orientation: dim.width > dim.height ? 'landscape' : 'portrait',
+    unit: 'mm',
+    format: [dim.width, dim.height]
+  });
+
+  pdf.addImage(imgData, 'PNG', 0, 0, dim.width, dim.height, '', 'SLOW');
+  pdf.save(filename);
+}
+
+async function exportPosterAsPNG(posterElement, filename = 'Stellar-Moment-StarMap.png') {
+  if (!window.html2canvas) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }
+
+  const canvas = await window.html2canvas(posterElement, {
+    scale: 6, // 6x Ultra-HD resolution
+    useCORS: true,
+    logging: false,
+    backgroundColor: null
+  });
+
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportPosterAsSVG(svgElement, filename = 'Stellar-Moment-StarMap.svg') {
+  if (!svgElement) return;
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svgElement);
+
+  // Add namespaces if missing
+  if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  if (!source.match(/^<svg[^>]+xmlns:xlink="http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+  }
+
+  source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+  const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = url;
+  link.click();
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+
+/**
+ * Stellar Moment â€” Narrative Journey & Interactive Star Chart Studio
+ */
+
+
+
+
+
 
 // Application State
 const state = {
@@ -24,7 +862,7 @@ const state = {
     name: 'Quito, Ecuador',
     lat: 0.0000,
     lon: -78.4678,
-    formattedCoords: '0.00° N, 78.47° W'
+    formattedCoords: '0.00Â° N, 78.47Â° W'
   },
   theme: 'midnight',
   typography: 'serif',
@@ -33,7 +871,7 @@ const state = {
     title: 'THE SKY ABOVE QUITO',
     subtitle: '26 August 2000',
     locationName: 'QUITO, ECUADOR',
-    quote: '“A moment written in the stars.”'
+    quote: 'â€œA moment written in the stars.â€'
   },
   toggles: {
     constellations: true,
@@ -50,10 +888,10 @@ const state = {
 };
 
 // =========================================================================
-// 🌟 CONFIGURACIÓN DE HISTORIA Y AUDIOS DE VOCAROO PARA IBETH
+// ðŸŒŸ CONFIGURACIÃ“N DE HISTORIA Y AUDIOS DE VOCAROO PARA IBETH
 // =========================================================================
 // =========================================================================
-// 🌟 CONFIGURACIÓN DE HISTORIA Y AUDIOS DE VOCAROO PARA IBETH
+// ðŸŒŸ CONFIGURACIÃ“N DE HISTORIA Y AUDIOS DE VOCAROO PARA IBETH
 // =========================================================================
 const NARRATIVE_SCENES = [
   {
@@ -61,9 +899,9 @@ const NARRATIVE_SCENES = [
     counter: "00 / 09",
     progress: 0,
     title: "El centro del mundo",
-    subtitle: "Quito, Ecuador · Latitud 00°00'00'' · 26 de Agosto de 2000 · 21:09",
-    text: "Comienza a anochecer en el centro del planeta, en la ciudad de Quito a las <span class=\"gold-num-glow\">9</span> de la noche con <span class=\"gold-num-glow\">9</span> minutos, latitud 00°00'00'', el día 26 de agosto del 2000.",
-    btnNextText: "Comenzar Viaje →",
+    subtitle: "Quito, Ecuador Â· Latitud 00Â°00'00'' Â· 26 de Agosto de 2000 Â· 21:09",
+    text: "Comienza a anochecer en el centro del planeta, en la ciudad de Quito a las <span class=\"gold-num-glow\">9</span> de la noche con <span class=\"gold-num-glow\">9</span> minutos, latitud 00Â°00'00'', el dÃ­a 26 de agosto del 2000.",
+    btnNextText: "Comenzar Viaje â†’",
     starsLevel: 0,
     highlightConstellations: [],
     showLines: false,
@@ -80,8 +918,8 @@ const NARRATIVE_SCENES = [
     progress: 11,
     title: "El universo",
     subtitle: "Una princesa por aparecer",
-    text: "El espacio se encuentra en un silencio oscuro, el cosmos aguarda paciente la víspera de presenciar la luz más hermosa de todo el firmamento. Una bebé, una princesa estaba a punto de poner el cielo patas arriba.",
-    btnNextText: "Continuar →",
+    text: "El espacio se encuentra en un silencio oscuro, el cosmos aguarda paciente la vÃ­spera de presenciar la luz mÃ¡s hermosa de todo el firmamento. Una bebÃ©, una princesa estaba a punto de poner el cielo patas arriba.",
+    btnNextText: "Continuar â†’",
     starsLevel: 1,
     highlightConstellations: [],
     showLines: false,
@@ -98,8 +936,8 @@ const NARRATIVE_SCENES = [
     progress: 22,
     title: "Las primeras estrellas",
     subtitle: "El nacimiento de una nueva estrella",
-    text: "Los astros que vemos como estrellas y polvo cósmico se alinean uno detrás de otro, pues están dejando espacio para un brillo único proveniente de la Tierra: el nacimiento de una nueva estrella.",
-    btnNextText: "Continuar →",
+    text: "Los astros que vemos como estrellas y polvo cÃ³smico se alinean uno detrÃ¡s de otro, pues estÃ¡n dejando espacio para un brillo Ãºnico proveniente de la Tierra: el nacimiento de una nueva estrella.",
+    btnNextText: "Continuar â†’",
     starsLevel: 1.5,
     highlightConstellations: [],
     showLines: false,
@@ -114,10 +952,10 @@ const NARRATIVE_SCENES = [
     step: 3,
     counter: "03 / 09",
     progress: 33,
-    title: "Orientación",
+    title: "OrientaciÃ³n",
     subtitle: "En el paralelo cero",
-    text: "En el paralelo cero, el cielo comienza a mostrar cada vez más su brillo, las coordenadas del mundo giran para encontrar el verdadero norte.",
-    btnNextText: "Continuar →",
+    text: "En el paralelo cero, el cielo comienza a mostrar cada vez mÃ¡s su brillo, las coordenadas del mundo giran para encontrar el verdadero norte.",
+    btnNextText: "Continuar â†’",
     starsLevel: 2,
     highlightConstellations: ["Ori"],
     animateLines: true,
@@ -135,8 +973,8 @@ const NARRATIVE_SCENES = [
     progress: 44,
     title: "Las primeras lunas",
     subtitle: "Ansiosos por verte nacer",
-    text: "Junto a las estrellas vemos las primeras lunas. Todos están ansiosos por verte nacer; tus padres llenos de orgullo, y yo, con apenas algunos meses de vida en este mundo, siento que mi corazón palpita cada vez más fuerte intuyendo tu llegada.",
-    btnNextText: "Continuar →",
+    text: "Junto a las estrellas vemos las primeras lunas. Todos estÃ¡n ansiosos por verte nacer; tus padres llenos de orgullo, y yo, con apenas algunos meses de vida en este mundo, siento que mi corazÃ³n palpita cada vez mÃ¡s fuerte intuyendo tu llegada.",
+    btnNextText: "Continuar â†’",
     starsLevel: 2.5,
     highlightConstellations: ["Ori"],
     showLines: true,
@@ -151,10 +989,10 @@ const NARRATIVE_SCENES = [
     step: 5,
     counter: "05 / 09",
     progress: 55,
-    title: "La estrella que más brilla",
+    title: "La estrella que mÃ¡s brilla",
     subtitle: "Eres el universo entero",
-    text: "El cielo de repente se pone a tus pies al verte nacer. En este momento no eres solo la estrella que más brilla; más que cualquier estrella, eres el universo entero, mi Ibeth preciosa.",
-    btnNextText: "Continuar →",
+    text: "El cielo de repente se pone a tus pies al verte nacer. En este momento no eres solo la estrella que mÃ¡s brilla; mÃ¡s que cualquier estrella, eres el universo entero, mi Ibeth preciosa.",
+    btnNextText: "Continuar â†’",
     starsLevel: 2.8,
     highlightConstellations: ["Ori", "Sco", "Cyg", "Sgr"],
     animateLines: true,
@@ -172,8 +1010,8 @@ const NARRATIVE_SCENES = [
     progress: 66,
     title: "Tu rostro",
     subtitle: "El mapa de tus pecas",
-    text: "Los astros siguen tu brillo, ya que sin él perderían su camino. En este momento, ellos forman tu rostro; ahora tú las llamas pecas, pero fueron el universo mismo dejando su huella sobre ti.",
-    btnNextText: "Continuar →",
+    text: "Los astros siguen tu brillo, ya que sin Ã©l perderÃ­an su camino. En este momento, ellos forman tu rostro; ahora tÃº las llamas pecas, pero fueron el universo mismo dejando su huella sobre ti.",
+    btnNextText: "Continuar â†’",
     starsLevel: 3,
     highlightConstellations: ["Ori", "Sco", "Cyg", "Sgr"],
     showLines: true,
@@ -188,10 +1026,10 @@ const NARRATIVE_SCENES = [
     step: 7,
     counter: "07 / 09",
     progress: 77,
-    title: "Las estrellas más luminosas",
+    title: "Las estrellas mÃ¡s luminosas",
     subtitle: "Los lunares de tu sonrisa",
-    text: "<span class=\"star-name-gold\">Antares</span>, la estrella de Escorpio, es ahora el lunar por encima de tu labio derecho. <span class=\"star-name-gold\">Altair</span>, la estrella de Aquila, se convirtió en el lunar a la izquierda de tu nariz. Las estrellas <span class=\"star-name-gold\">Spica</span> (de Virgo) y <span class=\"star-name-gold\">Arcturus</span> (de Boötes), las más majestuosas del cosmos, formaron los lunares a la derecha de tu mejilla. ¿Sabías que la mayoría de tus lunares están en la parte derecha de tu cara? Todos ellos brillan nuevamente cuando ven que tú sonríes.",
-    btnNextText: "Continuar →",
+    text: "<span class=\"star-name-gold\">Antares</span>, la estrella de Escorpio, es ahora el lunar por encima de tu labio derecho. <span class=\"star-name-gold\">Altair</span>, la estrella de Aquila, se convirtiÃ³ en el lunar a la izquierda de tu nariz. Las estrellas <span class=\"star-name-gold\">Spica</span> (de Virgo) y <span class=\"star-name-gold\">Arcturus</span> (de BoÃ¶tes), las mÃ¡s majestuosas del cosmos, formaron los lunares a la derecha de tu mejilla. Â¿SabÃ­as que la mayorÃ­a de tus lunares estÃ¡n en la parte derecha de tu cara? Todos ellos brillan nuevamente cuando ven que tÃº sonrÃ­es.",
+    btnNextText: "Continuar â†’",
     starsLevel: 3,
     highlightConstellations: ["*"],
     showLines: true,
@@ -208,8 +1046,8 @@ const NARRATIVE_SCENES = [
     progress: 88,
     title: "Constelaciones",
     subtitle: "Esculpidas en el cielo",
-    text: "Tu rostro es formado por millones de estrellas: <span class=\"constellation-name-blue\">Pegasus</span> y <span class=\"constellation-name-blue\">Boötes</span> son tus ojos, <span class=\"constellation-name-blue\">Aquila</span> tu nariz, <span class=\"constellation-name-blue\">Cygnus</span> y <span class=\"constellation-name-blue\">Hércules</span> tus cejas, y <span class=\"constellation-name-blue\">Escorpio</span> son los labios que me gustan besar.",
-    btnNextText: "Continuar →",
+    text: "Tu rostro es formado por millones de estrellas: <span class=\"constellation-name-blue\">Pegasus</span> y <span class=\"constellation-name-blue\">BoÃ¶tes</span> son tus ojos, <span class=\"constellation-name-blue\">Aquila</span> tu nariz, <span class=\"constellation-name-blue\">Cygnus</span> y <span class=\"constellation-name-blue\">HÃ©rcules</span> tus cejas, y <span class=\"constellation-name-blue\">Escorpio</span> son los labios que me gustan besar.",
+    btnNextText: "Continuar â†’",
     starsLevel: 3,
     highlightConstellations: ["*"],
     showLines: true,
@@ -224,10 +1062,10 @@ const NARRATIVE_SCENES = [
     step: 9,
     counter: "09 / 09",
     progress: 100,
-    title: "Feliz Cumpleaños",
-    subtitle: "26 de Agosto · Para mi Ibeth",
-    text: "Feliz cumpleaños, mi universo favorito. Permíteme seguir explorando el universo de tus ojos y el infinito de tu mirada.",
-    btnNextText: "Descubrir Playlist & Galaxia ✨",
+    title: "Feliz CumpleaÃ±os",
+    subtitle: "26 de Agosto Â· Para mi Ibeth",
+    text: "Feliz cumpleaÃ±os, mi universo favorito. PermÃ­teme seguir explorando el universo de tus ojos y el infinito de tu mirada.",
+    btnNextText: "Descubrir Playlist & Galaxia âœ¨",
     starsLevel: 3,
     highlightConstellations: ["*"],
     showLines: true,
@@ -674,7 +1512,7 @@ function renderNarrativeScene(stepIndex) {
 
   // Update Poster Coords Text
   const coordsEl = document.getElementById('narrative-poster-coords');
-  if (coordsEl) coordsEl.textContent = `21:09 · 0.00° N, 78.47° W`;
+  if (coordsEl) coordsEl.textContent = `21:09 Â· 0.00Â° N, 78.47Â° W`;
 
   // Always keep Next & Back buttons enabled for manual user control!
   const nextBtn = document.getElementById('narrative-btn-next');
@@ -931,7 +1769,7 @@ function updateTimeCoordsText() {
     ? `${(state.time.hour % 12) || 12}:${state.time.minute.toString().padStart(2, '0')} ${state.time.hour >= 12 ? 'PM' : 'AM'}`
     : `${state.time.hour.toString().padStart(2, '0')}:${state.time.minute.toString().padStart(2, '0')}`;
 
-  const coordsText = state.toggles.coordinates ? ` · ${state.location.formattedCoords}` : '';
+  const coordsText = state.toggles.coordinates ? ` Â· ${state.location.formattedCoords}` : '';
   const fullText = `${formattedTime}${coordsText}`;
   document.getElementById('poster-render-time-coords').textContent = fullText;
 }
@@ -1102,7 +1940,7 @@ function openAstroModal() {
   const skyData = getVisibleSkyData(quitoUtcDate, -0.1807, -78.4678);
 
   document.getElementById('astro-moon-phase').textContent = `${skyData.moonPhase.name} (${skyData.moonPhase.illumination}%)`;
-  document.getElementById('astro-lst').textContent = `${(skyData.lst / 15).toFixed(2)} hours (${skyData.lst.toFixed(1)}°)`;
+  document.getElementById('astro-lst').textContent = `${(skyData.lst / 15).toFixed(2)} hours (${skyData.lst.toFixed(1)}Â°)`;
 
   const planetNames = skyData.planets.map(p => p.name).join(', ') || 'None visible';
   document.getElementById('astro-planets').textContent = planetNames;
@@ -1302,7 +2140,7 @@ function initGalaxyPageListeners() {
       document.getElementById('modal-photo-badge').textContent = starLabel;
       document.getElementById('modal-photo-title').textContent = title;
       document.getElementById('modal-photo-date').textContent = date;
-      document.getElementById('modal-photo-note').textContent = `“${note}”`;
+      document.getElementById('modal-photo-note').textContent = `â€œ${note}â€`;
 
       // Setup Google Drive Direct Link Button
       const directDriveUrl = DRIVE_LINKS[starId];
@@ -1466,7 +2304,7 @@ function triggerBirthdayEmojiPop() {
   burstEl.id = 'birthday-emoji-burst';
   burstEl.className = 'birthday-emoji-container';
 
-  const emojis = ['🎂', '🥳', '✨', '🎉', '💖', '👑', '🎂', '🎉'];
+  const emojis = ['ðŸŽ‚', 'ðŸ¥³', 'âœ¨', 'ðŸŽ‰', 'ðŸ’–', 'ðŸ‘‘', 'ðŸŽ‚', 'ðŸŽ‰'];
   emojis.forEach((emoji, idx) => {
     const span = document.createElement('span');
     span.className = 'emoji-pop';
@@ -1481,4 +2319,5 @@ function triggerBirthdayEmojiPop() {
     if (burstEl) burstEl.remove();
   }, 4000);
 }
+
 
