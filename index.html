@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Sky Above Quito — A Moment Written in the Stars</title>
+  <meta name="description" content="A special night sky presentation of Quito, Ecuador on 26 August 2000 at 21:09.">
+
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Design System -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Space Starfield Background -->
+  <div class="space-bg">
+    <div class="space-stars"></div>
+  </div>
+
+  <!-- NARRATIVE INTERACTIVE JOURNEY VIEW (PRIMARY) -->
+  <section id="narrative-view" style="max-width: 1280px; margin: 0 auto; padding: 2rem 1rem 3rem;">
+    
+    <!-- Stage Grid: Mobile responsive -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;" class="editor-grid">
+      
+      <!-- LIVE STAR MAP POSTER DISPLAY (Triple-click secret save trigger) -->
+      <div style="display: flex; justify-content: center; order: 1;">
+        <div class="poster-frame theme-midnight font-choice-serif border-double" style="width: 100%; max-width: 440px; aspect-ratio: 1 / 1.35; border-radius: 6px; cursor: pointer;" id="narrative-poster-card" title="Triple-click to save map">
+          <div style="text-align: center; margin-bottom: 0.5rem;">
+            <h3 id="narrative-poster-title" style="font-size: 1.35rem; letter-spacing: 0.1em; text-transform: uppercase;">THE SKY ABOVE QUITO</h3>
+            <div id="narrative-poster-subtitle" style="font-size: 0.85rem; opacity: 0.85; letter-spacing: 0.05em; margin-top: 0.2rem;">26 August 2000</div>
+          </div>
+
+          <div style="width: 100%; aspect-ratio: 1; margin: 0.5rem 0;" id="narrative-sky-container">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div style="text-align: center; margin-top: 0.5rem;">
+            <div id="narrative-poster-location" style="font-size: 0.9rem; font-weight: 600; letter-spacing: 0.05em;">QUITO, ECUADOR</div>
+            <div id="narrative-poster-coords" style="font-size: 0.75rem; opacity: 0.75; margin-top: 0.15rem;">21:09 · 0.00° N, 78.47° W</div>
+            <p id="narrative-poster-quote" style="font-style: italic; font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.95;">“A moment written in the stars.”</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NARRATIVE STORY CARD -->
+      <div class="narrative-card" style="padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 420px; order: 2;">
+        
+        <div>
+          <!-- Header Badge & Progress -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.3); padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.75rem; color: #E5C07B;">
+              <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+              <span>Night Sky Journey</span>
+            </div>
+
+            <!-- Step Progress Counter -->
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span id="narrative-step-counter" style="font-size: 0.85rem; font-family: var(--font-sans); color: #D4AF37; font-weight: 600;">00 / 09</span>
+              <div style="width: 70px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 9999px; overflow: hidden;">
+                <div id="narrative-progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene Main Title -->
+          <h1 id="narrative-scene-title" style="font-family: var(--font-serif); font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 600; line-height: 1.2; color: #FFFFFF; margin-bottom: 0.4rem;">
+            Quito, Ecuador
+          </h1>
+
+          <!-- Date & Time Subtitle -->
+          <div id="narrative-scene-subtitle" style="font-size: 0.85rem; color: #D4AF37; letter-spacing: 0.05em; font-weight: 500; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+            <span>26 August 2000 · 21:09 Quito Local Time</span>
+          </div>
+
+          <!-- Scene Explanation Body Text -->
+          <p id="narrative-scene-text" style="font-size: 1.05rem; color: #D1D5DB; line-height: 1.65; margin-bottom: 1.5rem;" class="narrative-fade-enter">
+            Discover the sky as it appeared that night.
+          </p>
+        </div>
+
+        <!-- Narrative Action Button Controls: Audio, Back, Next -->
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+            
+            <!-- Listen Audio Button -->
+            <button id="narrative-btn-audio" class="btn-secondary" style="font-size: 0.85rem; padding: 0.8rem 1.1rem; min-height: 46px; border-color: rgba(212, 175, 55, 0.5); color: #E5C07B;" title="Escuchar Voz">
+              <i data-lucide="volume-2" style="width: 16px; height: 16px;"></i>
+              <span id="narrative-btn-audio-text">Escuchar Voz</span>
+            </button>
+
+            <!-- Back Button -->
+            <button id="narrative-btn-back" class="btn-secondary" style="font-size: 0.85rem; padding: 0.8rem 1.1rem; min-height: 46px;" disabled>
+              <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+              <span>Anterior</span>
+            </button>
+
+            <!-- Next Button (Always Active) -->
+            <button id="narrative-btn-next" class="btn-gold" style="font-size: 0.95rem; padding: 0.8rem 1.5rem; flex: 1; justify-content: center; min-height: 46px;">
+              <span id="narrative-btn-next-text">Siguiente →</span>
+              <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DEDICATED GALAXY & PLAYLIST SURPRISE PAGE (Transitioned from Step 9) -->
+  <section id="galaxy-surprise-page" class="galaxy-page-section" style="display: none; max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 5rem;">
+    
+    <!-- Top Navigation Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+      <button id="btn-back-to-sky" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+        <span>Volver al Mapa Estelar</span>
+      </button>
+
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.35); padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.8rem; color: #E5C07B;">
+        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+        <span>Capítulo Final: Música & Galaxia de Recuerdos</span>
+      </div>
+    </div>
+
+    <!-- 1. STYLED CELESTIAL PLAYLIST -->
+    <div class="glass-panel cosmic-playlist-card" style="padding: 2.5rem 2rem; border-radius: 24px; margin-bottom: 3.5rem; position: relative; overflow: hidden; background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.12), rgba(11, 16, 33, 0.95)); border: 1px solid rgba(212, 175, 55, 0.3);">
+      
+      <!-- Ambient Cosmic Glow -->
+      <div style="position: absolute; -top: 50px; -right: 50px; width: 250px; height: 250px; background: rgba(212, 175, 55, 0.15); filter: blur(70px); border-radius: 50%; pointer-events: none;"></div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem;">
+        <div>
+          <h2 style="font-family: var(--font-serif); font-size: clamp(1.8rem, 3.5vw, 2.4rem); color: #FFFFFF; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="radio" style="color: #D4AF37; width: 28px; height: 28px;" class="vinyl-spinning-icon"></i>
+            Sonidos del espacio
+          </h2>
+          <p style="color: #9CA3AF; font-size: 0.95rem; margin-top: 0.3rem;">Canciones escritas en las estrellas para escuchar nuestro universo juntos.</p>
+        </div>
+
+        <!-- Animated Vinyl Graphic -->
+        <div class="vinyl-record-container">
+          <div class="vinyl-disc">
+            <div class="vinyl-center"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Playlist Items Grid -->
+      <div class="playlist-container" style="display: flex; flex-direction: column; gap: 1rem;">
+        
+        <!-- Song 1: 134340 - BTS -->
+        <div class="playlist-item glass-card" data-song-src="https://lh3.googleusercontent.com/d/1nZkQhLeVqAz5g843b-n0_TcWnaDq1Ywg">
+          <button class="play-btn-cosmic" title="Reproducir Canción">
+            <i data-lucide="play" class="icon-play" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="pause" class="icon-pause" style="width: 16px; height: 16px; display: none;"></i>
+          </button>
+          <div class="song-info" style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="song-title">134340</div>
+              <span style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.2); color: #E5C07B; border: 1px solid rgba(212, 175, 55, 0.4); padding: 0.1rem 0.4rem; border-radius: 9999px;">✦ Plutón & Cosmos</span>
+            </div>
+            <div class="song-artist" style="color: #D4AF37; font-weight: 500;">BTS</div>
+            <div style="font-size: 0.75rem; font-style: italic; color: #9CA3AF; margin-top: 0.2rem;">“Un asteroide borrado del mapa... pero sigo girando eternamente a tu alrededor.”</div>
+          </div>
+          <div class="sound-equalizer">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Song 2: My Universe - Coldplay x BTS -->
+        <div class="playlist-item glass-card" data-song-src="https://lh3.googleusercontent.com/d/18RBBuJI3SKwMHMI9WOVn3uKgFrIZeGSh">
+          <button class="play-btn-cosmic" title="Reproducir Canción">
+            <i data-lucide="play" class="icon-play" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="pause" class="icon-pause" style="width: 16px; height: 16px; display: none;"></i>
+          </button>
+          <div class="song-info" style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="song-title">My Universe</div>
+              <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 0.1rem 0.4rem; border-radius: 9999px;">🪐 Galaxia</span>
+            </div>
+            <div class="song-artist" style="color: #38BDF8; font-weight: 500;">Coldplay x BTS</div>
+            <div style="font-size: 0.75rem; font-style: italic; color: #9CA3AF; margin-top: 0.2rem;">“You, you are my universe, and I just want to put you first...”</div>
+          </div>
+          <div class="sound-equalizer">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Song 3: MAI - Milo J -->
+        <div class="playlist-item glass-card" data-song-src="https://lh3.googleusercontent.com/d/1MtUvL_Vv7MmlxkGuIyfEWUvJBqx_syJ0">
+          <button class="play-btn-cosmic" title="Reproducir Canción">
+            <i data-lucide="play" class="icon-play" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="pause" class="icon-pause" style="width: 16px; height: 16px; display: none;"></i>
+          </button>
+          <div class="song-info" style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="song-title">MAI</div>
+              <span style="font-size: 0.65rem; background: rgba(244, 114, 182, 0.2); color: #F472B6; border: 1px solid rgba(244, 114, 182, 0.4); padding: 0.1rem 0.4rem; border-radius: 9999px;">💖 Amor</span>
+            </div>
+            <div class="song-artist" style="color: #F472B6; font-weight: 500;">Milo J</div>
+            <div style="font-size: 0.75rem; font-style: italic; color: #9CA3AF; margin-top: 0.2rem;">“Tú eres mi luz entre la noche, mi refugio bajo las estrellas.”</div>
+          </div>
+          <div class="sound-equalizer">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Song 4: Bendita Tu Luz - Juan Luis Guerra / Maná -->
+        <div class="playlist-item glass-card" data-song-src="https://lh3.googleusercontent.com/d/1L-f3Iz2gXRdS7UWQm4vKgYp1eA99qaOU">
+          <button class="play-btn-cosmic" title="Reproducir Canción">
+            <i data-lucide="play" class="icon-play" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="pause" class="icon-pause" style="width: 16px; height: 16px; display: none;"></i>
+          </button>
+          <div class="song-info" style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="song-title">Bendita Tu Luz</div>
+              <span style="font-size: 0.65rem; background: rgba(251, 191, 36, 0.2); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 0.1rem 0.4rem; border-radius: 9999px;">✨ Luz Divina</span>
+            </div>
+            <div class="song-artist" style="color: #FBBF24; font-weight: 500;">Maná ft. Juan Luis Guerra</div>
+            <div style="font-size: 0.75rem; font-style: italic; color: #9CA3AF; margin-top: 0.2rem;">“Bendita la luz de tu mirada... bendito el destino que te puso en mi camino.”</div>
+          </div>
+          <div class="sound-equalizer">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Song 5: Soñé - Zoé -->
+        <div class="playlist-item glass-card" data-song-src="https://lh3.googleusercontent.com/d/1sxkPGb6andJg6EiRNRXhzWZmUrWh9Mg3">
+          <button class="play-btn-cosmic" title="Reproducir Canción">
+            <i data-lucide="play" class="icon-play" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="pause" class="icon-pause" style="width: 16px; height: 16px; display: none;"></i>
+          </button>
+          <div class="song-info" style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="song-title">Soñé</div>
+              <span style="font-size: 0.65rem; background: rgba(167, 139, 250, 0.2); color: #A78BFA; border: 1px solid rgba(167, 139, 250, 0.4); padding: 0.1rem 0.4rem; border-radius: 9999px;">🌌 Planeta Estelar</span>
+            </div>
+            <div class="song-artist" style="color: #A78BFA; font-weight: 500;">Zoé</div>
+            <div style="font-size: 0.75rem; font-style: italic; color: #9CA3AF; margin-top: 0.2rem;">“Y en un planeta con estrellas girando por ti...”</div>
+          </div>
+          <div class="sound-equalizer">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. INTERACTIVE VIRGO CONSTELLATION MEMORY MAP -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <h2 style="font-family: var(--font-serif); font-size: clamp(1.8rem, 3.5vw, 2.4rem); color: #FFFFFF; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+        <i data-lucide="sparkles" style="color: #D4AF37;"></i>
+        Constelación de Virgo — Mensajes de las Estrellas
+      </h2>
+      <p style="color: #9CA3AF; font-size: 0.95rem; margin-top: 0.4rem; max-width: 650px; margin-left: auto; margin-right: auto;">
+        Toca las <strong>estrellas de tu constelación</strong> para revelar los videos y mensajes que tus seres queridos prepararon para ti. ¡Al descubrirlos todos, las estrellas se unirán y una luz central resplandecerá!
+      </p>
+    </div>
+
+    <!-- Interactive Virgo Constellation Stage -->
+    <div class="galaxy-stage-card glass-panel">
+      
+      <!-- Galaxy Background & Virgo Star Nodes Container -->
+      <div id="galaxy-constellation-map">
+        
+        <!-- Cosmic Dust Swirl Background -->
+        <div class="galaxy-nebula-bg"></div>
+
+        <!-- Virgo Constellation SVG Lines -->
+        <svg class="galaxy-lines-svg" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;">
+          <!-- Line 1: Dani (1) to Kelly (2) -->
+          <line id="virgo-line-1" class="virgo-line" />
+          <!-- Line 2: Kelly (2) to Josue (3) -->
+          <line id="virgo-line-2" class="virgo-line" />
+          <!-- Line 3: Josue (3) to Jacqui (4) -->
+          <line id="virgo-line-3" class="virgo-line" />
+          <!-- Line 4: Josue (3) to Star V (5) -->
+          <line id="virgo-line-4" class="virgo-line" />
+          <!-- Line 5: Star V (5) to Star VII (7) -->
+          <line id="virgo-line-5" class="virgo-line" />
+          <!-- Line 6: Josue (3) to Star VI (6) -->
+          <line id="virgo-line-6" class="virgo-line" />
+          <!-- Line 7: Josue (3) to Final Master Star (Spica) -->
+          <line id="virgo-line-7" class="virgo-line" />
+        </svg>
+
+        <!-- Star Node 1: Dani -->
+        <div class="virgo-star-node" style="top: 20%; left: 24%;" data-star-num="1" data-star-id="dani" data-person="Dani" data-title="Mensaje Especial de Dani 🎥" data-date="Para Ibeth" data-video-src="media/videos/dani.mp4" data-video-embed="https://drive.google.com/file/d/1D1kGcHRu2_7YwlKvrMa-GtVzMbJNcLTO/preview" data-note="Un video lleno de cariño y abrazos estelares preparado por Dani.">
+          <div class="star-number-badge">1</div>
+          <div class="star-core" style="background: #FFF;"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Dani</span>
+        </div>
+
+        <!-- Star Node 2: Kelly -->
+        <div class="virgo-star-node" style="top: 34%; left: 34%;" data-star-num="2" data-star-id="kelly" data-person="Kelly" data-title="Mensaje Especial de Kelly 🎥" data-date="Un Brillo Inolvidable" data-video-src="media/videos/kelly.mp4" data-video-embed="https://drive.google.com/file/d/1ik5e240qFXZZQ8GVM1GuznsAHGJMJR2B/preview" data-img="https://drive.google.com/file/d/1yi3pPbfKWuR0roG38B0a25-Rh2gLmnvE/preview" data-note="Un hermoso video y recuerdo preparado por Kelly para ti.">
+          <div class="star-number-badge">2</div>
+          <div class="star-core" style="background: #FFF;"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Kelly</span>
+        </div>
+
+        <!-- Star Node 3: Josué -->
+        <div class="virgo-star-node" style="top: 44%; left: 48%;" data-star-num="3" data-star-id="josue" data-person="Josué" data-title="Mensaje Especial de Josué 🎥" data-date="Abrazos hasta el Infinito" data-video-src="media/videos/josue.mp4" data-video-embed="https://drive.google.com/file/d/17uTMv51_V9nBcR_eagSRra-UwxGLuymt/preview" data-note="Un mensaje enviado desde el corazón por Josué para celebrar tu día.">
+          <div class="star-number-badge">3</div>
+          <div class="star-core" style="background: #FFF;"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Josué</span>
+        </div>
+
+        <!-- Star Node 4: Jacqui -->
+        <div class="virgo-star-node" style="top: 22%; left: 76%;" data-star-num="4" data-star-id="jacqui" data-person="Jacqui" data-title="Mensaje Especial de Jacqui 🎥" data-date="Con Mucho Amor" data-video-src="media/videos/jacqui.mp4" data-video-embed="https://drive.google.com/file/d/1isNk7Ls-WJx3Q0z1Zmhr9A40A-ZuO3r1/preview" data-note="Jacqui te envía un emotivo saludo lleno de luz en tu cumpleaños.">
+          <div class="star-number-badge">4</div>
+          <div class="star-core" style="background: #FFF;"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Jacqui</span>
+        </div>
+
+        <!-- Star Node 5: Placeholder Amigo 5 -->
+        <div class="virgo-star-node" style="top: 64%; left: 70%;" data-star-num="5" data-star-id="star5" data-person="Estrella V" data-title="Estrella de Recuerdo V 🎥" data-date="Espacio Reservado" data-note="[Lugar reservado para agregar un nuevo video o mensaje de amigo/familia]">
+          <div class="star-number-badge">5</div>
+          <div class="star-core" style="background: rgba(255,255,255,0.7);"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Estrella V</span>
+        </div>
+
+        <!-- Star Node 6: Placeholder Amigo 6 -->
+        <div class="virgo-star-node" style="top: 80%; left: 34%;" data-star-num="6" data-star-id="star6" data-person="Estrella VI" data-title="Estrella de Recuerdo VI 🎥" data-date="Espacio Reservado" data-note="[Lugar reservado para agregar un nuevo video o mensaje de amigo/familia]">
+          <div class="star-number-badge">6</div>
+          <div class="star-core" style="background: rgba(255,255,255,0.7);"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Estrella VI</span>
+        </div>
+
+        <!-- Star Node 7: Placeholder Amigo 7 -->
+        <div class="virgo-star-node" style="top: 82%; left: 62%;" data-star-num="7" data-star-id="star7" data-person="Estrella VII" data-title="Estrella de Recuerdo VII 🎥" data-date="Espacio Reservado" data-note="[Lugar reservado para agregar un nuevo video o mensaje de amigo/familia]">
+          <div class="star-number-badge">7</div>
+          <div class="star-core" style="background: rgba(255,255,255,0.7);"></div>
+          <div class="star-aura"></div>
+          <span class="star-label">✦ Estrella VII</span>
+        </div>
+
+        <!-- MASTER CENTRAL FINAL STAR: Spica - Heart of Virgo -->
+        <div id="final-master-star" class="virgo-star-node" style="top: 52%; left: 48%;" data-star-num="8" data-star-id="final" data-person="Estrella Final" data-title="👑 El Regalo Final del Universo 🎥" data-date="Para Ibeth, Mi Universo Entero" data-video-src="media/videos/final.mp4" data-video-embed="https://drive.google.com/file/d/1Zk3UEirsdhFQwqHHu3TW41ElKeLB2mcj/preview" data-note="El mensaje definitivo que ilumina toda tu constelación. Te amo con todo mi ser.">
+          <div class="star-number-badge" style="background: #D4AF37; color: #000;">👑</div>
+          <div class="star-core"></div>
+          <div class="star-aura"></div>
+          <span class="star-label" style="font-size: 0.85rem; color: #D4AF37; margin-top: 4px;">✨ ESTRELLA FINAL ✨</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- GALAXY & VIRGO MEDIA MEMORY MODAL (VERTICAL PORTRAIT 9:16 REELS POPUP) -->
+  <div id="photo-memory-modal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.94); backdrop-filter: blur(16px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 0.75rem;">
+    <div class="glass-panel photo-modal-card" style="width: 92%; max-width: 420px; max-height: 94vh; overflow-y: auto; padding: 1.25rem; border-radius: 24px; border: 1.5px solid rgba(212, 175, 55, 0.5); text-align: center; position: relative;">
+      
+      <button id="close-photo-modal" class="btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.75rem; border-radius: 50%; z-index: 10; background: rgba(0,0,0,0.6);">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+
+      <div style="margin-bottom: 0.75rem;">
+        <span id="modal-photo-badge" style="font-size: 0.75rem; color: #D4AF37; letter-spacing: 0.12em; font-weight: 600; text-transform: uppercase;">✦ Estrella</span>
+        <h3 id="modal-photo-title" style="font-family: var(--font-serif); font-size: 1.35rem; color: #FFFFFF; margin-top: 0.15rem;">Mensaje Especial</h3>
+        <div id="modal-photo-date" style="font-size: 0.8rem; color: #9CA3AF; margin-top: 0.1rem;">Para Ibeth</div>
+      </div>
+
+      <!-- Vertical Portrait Video & Photo Display Frame (9:16 REELS RATIO) -->
+      <div id="modal-media-container" style="width: 100%; aspect-ratio: 9 / 16; max-height: 60vh; border-radius: 16px; overflow: hidden; border: 2px solid rgba(212, 175, 55, 0.6); box-shadow: 0 15px 35px rgba(0,0,0,0.9); margin-bottom: 1rem; background: #000; position: relative;">
+        <video id="modal-video-player" src="" controls playsinline style="width: 100%; height: 100%; object-fit: cover; background: #000;"></video>
+        <iframe id="modal-video-iframe" src="" style="width: 100%; height: 100%; border: 0; display: none;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        <img id="modal-photo-img" src="" alt="Foto de la estrella" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+      </div>
+
+      <p id="modal-photo-note" style="font-style: italic; font-size: 0.9rem; color: #E5E7EB; line-height: 1.4; margin: 0 auto;">
+        “Un mensaje lleno de cariño preparado especialmente para ti.”
+      </p>
+
+      <a id="modal-drive-btn" href="#" target="_blank" class="btn-gold" style="display: none; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.65rem 1rem; border-radius: 12px; font-weight: 600; text-decoration: none; margin-top: 0.85rem; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(212,175,55,0.4);">
+        <i data-lucide="external-link" style="width: 15px; height: 15px;"></i>
+        <span>Abrir Video en Google Drive ↗</span>
+      </a>
+
+    </div>
+  </div>
+
+
+
+  <!-- LIVE EDITOR VIEW (Hidden unless toggled) -->
+  <section id="editor-page" style="max-width: 1380px; margin: 0 auto; padding: 1.5rem; display: none;">
+    <div style="display: grid; grid-template-columns: 420px 1fr; gap: 2rem;" class="editor-grid">
+      
+      <!-- CONTROLS PANEL (LEFT COLUMN) -->
+      <div class="glass-panel" style="padding: 1.5rem; max-height: calc(100vh - 100px); overflow-y: auto;">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; border-b: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+          <h2 style="font-family: var(--font-serif); font-size: 1.35rem; color: #FFFFFF; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="sliders" style="width: 18px; height: 18px; color: #D4AF37;"></i>
+            <span>Map Studio</span>
+          </h2>
+
+          <button id="btn-show-astro-modal" class="btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+            <i data-lucide="moon" style="width: 14px; height: 14px;"></i>
+            <span>Sky Details</span>
+          </button>
+        </div>
+
+        <!-- CONTROL SECTION 1: DATE & TIME -->
+        <div style="margin-bottom: 1.75rem;">
+          <label class="form-label" style="display: flex; align-items: center; gap: 0.4rem; color: #E5C07B; font-weight: 600;">
+            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> 1. Date & Time
+          </label>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <div>
+              <span style="font-size: 0.7rem; color: #9CA3AF;">Month</span>
+              <select id="input-month" class="form-input">
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7" selected>August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+              </select>
+            </div>
+            <div>
+              <span style="font-size: 0.7rem; color: #9CA3AF;">Day</span>
+              <input type="number" id="input-day" class="form-input" min="1" max="31" value="26">
+            </div>
+            <div>
+              <span style="font-size: 0.7rem; color: #9CA3AF;">Year</span>
+              <input type="number" id="input-year" class="form-input" min="1900" max="2100" value="2000">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.7rem; color: #9CA3AF;">Hour</span>
+              <input type="number" id="input-hour" class="form-input" min="0" max="23" value="21">
+            </div>
+            <div>
+              <span style="font-size: 0.7rem; color: #9CA3AF;">Minute</span>
+              <input type="number" id="input-minute" class="form-input" min="0" max="59" value="9">
+            </div>
+            <div>
+              <span style="font-size: 0.7rem; color: #9CA3AF;">Time Format</span>
+              <select id="input-time-format" class="form-input">
+                <option value="24">24-Hour (21:09)</option>
+                <option value="12">12-Hour (9:09 PM)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROL SECTION 2: LOCATION -->
+        <div style="margin-bottom: 1.75rem;">
+          <label class="form-label" style="display: flex; align-items: center; gap: 0.4rem; color: #E5C07B; font-weight: 600;">
+            <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i> 2. Location
+          </label>
+
+          <div style="position: relative; margin-bottom: 0.75rem;">
+            <input type="text" id="input-location-search" class="form-input" placeholder="Search location..." value="Quito, Ecuador">
+            <div id="location-suggestions" class="glass-panel" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 50; display: none; margin-top: 4px; max-height: 200px; overflow-y: auto;">
+              <!-- Dynamic search results -->
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <input type="number" step="0.0001" id="input-lat" class="form-input" placeholder="Latitude" value="-0.1807">
+            <input type="number" step="0.0001" id="input-lon" class="form-input" placeholder="Longitude" value="-78.4678">
+          </div>
+        </div>
+
+        <!-- CONTROL SECTION 3: THEME & STYLES -->
+        <div style="margin-bottom: 1.75rem;">
+          <label class="form-label" style="display: flex; align-items: center; gap: 0.4rem; color: #E5C07B; font-weight: 600;">
+            <i data-lucide="palette" style="width: 14px; height: 14px;"></i> 3. Theme & Aesthetics
+          </label>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="theme-card-btn glass-card active" data-theme="midnight" style="padding: 0.6rem; text-align: center; border-radius: 8px; cursor: pointer;">
+              <div style="width: 100%; height: 24px; background: #0B1021; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 0.35rem;"></div>
+              <span style="font-size: 0.75rem; color: #FFF;">Midnight</span>
+            </button>
+
+            <button class="theme-card-btn glass-card" data-theme="cosmic" style="padding: 0.6rem; text-align: center; border-radius: 8px; cursor: pointer;">
+              <div style="width: 100%; height: 24px; background: #081B33; border-radius: 4px; border: 1px solid rgba(96, 165, 250, 0.4); margin-bottom: 0.35rem;"></div>
+              <span style="font-size: 0.75rem; color: #FFF;">Cosmic Blue</span>
+            </button>
+
+            <button class="theme-card-btn glass-card" data-theme="vintage" style="padding: 0.6rem; text-align: center; border-radius: 8px; cursor: pointer;">
+              <div style="width: 100%; height: 24px; background: #F5EFEB; border-radius: 4px; border: 1px solid #2A2421; margin-bottom: 0.35rem;"></div>
+              <span style="font-size: 0.75rem; color: #FFF;">Vintage</span>
+            </button>
+
+            <button class="theme-card-btn glass-card" data-theme="minimal" style="padding: 0.6rem; text-align: center; border-radius: 8px; cursor: pointer;">
+              <div style="width: 100%; height: 24px; background: #FFFFFF; border-radius: 4px; border: 1px solid #000; margin-bottom: 0.35rem;"></div>
+              <span style="font-size: 0.75rem; color: #FFF;">Minimal</span>
+            </button>
+
+            <button class="theme-card-btn glass-card" data-theme="golden" style="padding: 0.6rem; text-align: center; border-radius: 8px; cursor: pointer;">
+              <div style="width: 100%; height: 24px; background: #09090B; border: 1px solid #D4AF37; border-radius: 4px; margin-bottom: 0.35rem;"></div>
+              <span style="font-size: 0.75rem; color: #E5C07B;">Golden Night</span>
+            </button>
+
+            <button class="theme-card-btn glass-card" data-theme="rose" style="padding: 0.6rem; text-align: center; border-radius: 8px; cursor: pointer;">
+              <div style="width: 100%; height: 24px; background: #1A0B16; border: 1px solid #EC4899; border-radius: 4px; margin-bottom: 0.35rem;"></div>
+              <span style="font-size: 0.75rem; color: #FCE7F3;">Celestial Rose</span>
+            </button>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.7rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Typography Family</span>
+            <select id="select-font-family" class="form-input">
+              <option value="serif" selected>Playfair / Garamond (Classic Serif)</option>
+              <option value="sans">Inter / Montserrat (Modern Minimal Sans)</option>
+              <option value="display">Bodoni / Cinzel (Celestial Display)</option>
+            </select>
+          </div>
+
+          <div>
+            <span style="font-size: 0.7rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Poster Frame Border</span>
+            <select id="select-border-style" class="form-input">
+              <option value="border-double" selected>Double Celestial Line</option>
+              <option value="border-simple">Thin Elegant Frame</option>
+              <option value="border-ornate">Inner Inset Frame</option>
+              <option value="border-flush">Minimal Flush (No Outer Border)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CONTROL SECTION 4: TEXT & PERSONALIZATION -->
+        <div style="margin-bottom: 1.75rem;">
+          <label class="form-label" style="display: flex; align-items: center; gap: 0.4rem; color: #E5C07B; font-weight: 600;">
+            <i data-lucide="type" style="width: 14px; height: 14px;"></i> 4. Poster Typography & Text
+          </label>
+
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.7rem; color: #9CA3AF;">Main Title</span>
+            <input type="text" id="input-title" class="form-input" value="THE SKY ABOVE QUITO">
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.7rem; color: #9CA3AF;">Subtitle / Date Display</span>
+            <input type="text" id="input-subtitle" class="form-input" value="26 August 2000">
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.7rem; color: #9CA3AF;">Location Header</span>
+            <input type="text" id="input-location-name" class="form-input" value="QUITO, ECUADOR">
+          </div>
+
+          <div>
+            <span style="font-size: 0.7rem; color: #9CA3AF;">Personal Quote / Message</span>
+            <textarea id="input-quote" class="form-input" rows="2">“A moment written in the stars.”</textarea>
+          </div>
+        </div>
+
+        <!-- CONTROL SECTION 5: TOGGLES -->
+        <div style="margin-bottom: 1.75rem;">
+          <label class="form-label" style="display: flex; align-items: center; gap: 0.4rem; color: #E5C07B; font-weight: 600;">
+            <i data-lucide="eye" style="width: 14px; height: 14px;"></i> 5. Celestial Elements
+          </label>
+
+          <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: #E5E7EB; cursor: pointer;">
+              <span>Show Constellation Lines</span>
+              <input type="checkbox" id="toggle-constellations" checked style="accent-color: #D4AF37; width: 16px; height: 16px;">
+            </label>
+
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: #E5E7EB; cursor: pointer;">
+              <span>Show Constellation Names</span>
+              <input type="checkbox" id="toggle-constellation-names" checked style="accent-color: #D4AF37; width: 16px; height: 16px;">
+            </label>
+
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: #E5E7EB; cursor: pointer;">
+              <span>Show Planets & Moon</span>
+              <input type="checkbox" id="toggle-planets" checked style="accent-color: #D4AF37; width: 16px; height: 16px;">
+            </label>
+
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: #E5E7EB; cursor: pointer;">
+              <span>Show Lat / Lon Coordinates</span>
+              <input type="checkbox" id="toggle-coordinates" checked style="accent-color: #D4AF37; width: 16px; height: 16px;">
+            </label>
+
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: #E5E7EB; cursor: pointer;">
+              <span>Show Cardinal Points (N/S/E/W)</span>
+              <input type="checkbox" id="toggle-cardinal" checked style="accent-color: #D4AF37; width: 16px; height: 16px;">
+            </label>
+          </div>
+        </div>
+
+        <!-- EXPORT BUTTONS -->
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; border-t: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+          <button id="btn-export-pdf" class="btn-gold" style="width: 100%; justify-content: center; font-size: 0.95rem;">
+            <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+            <span>Download Vector PDF</span>
+          </button>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <button id="btn-export-png" class="btn-secondary" style="font-size: 0.8rem; justify-content: center;">
+              <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+              <span>High-Res PNG</span>
+            </button>
+            <button id="btn-export-svg" class="btn-secondary" style="font-size: 0.8rem; justify-content: center;">
+              <i data-lucide="file-code" style="width: 14px; height: 14px;"></i>
+              <span>Vector SVG</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LIVE PREVIEW CONTAINER -->
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: sticky; top: 80px;">
+        
+        <div class="glass-panel" style="padding: 0.5rem 1rem; border-radius: 9999px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+          <span style="font-size: 0.75rem; color: #9CA3AF;">Interactive Controls:</span>
+          
+          <button id="btn-map-zoom-in" title="Zoom In" class="btn-secondary" style="padding: 0.35rem 0.6rem;"><i data-lucide="zoom-in" style="width: 14px; height: 14px;"></i></button>
+          <button id="btn-map-zoom-out" title="Zoom Out" class="btn-secondary" style="padding: 0.35rem 0.6rem;"><i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i></button>
+          <button id="btn-map-rotate-cw" title="Rotate Chart" class="btn-secondary" style="padding: 0.35rem 0.6rem;"><i data-lucide="rotate-cw" style="width: 14px; height: 14px;"></i></button>
+          <button id="btn-map-reset" title="Reset View" class="btn-secondary" style="padding: 0.35rem 0.6rem;"><i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i></button>
+        </div>
+
+        <div id="live-poster-element" class="poster-frame theme-midnight font-choice-serif border-double" style="width: 100%; max-width: 520px; aspect-ratio: 1 / 1.35; border-radius: 4px;">
+          
+          <div style="text-align: center; padding-top: 0.5rem; width: 100%;">
+            <h2 id="poster-render-title" style="font-size: 1.6rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; line-height: 1.2;">THE SKY ABOVE QUITO</h2>
+            <div id="poster-render-subtitle" style="font-size: 0.9rem; opacity: 0.85; letter-spacing: 0.08em; margin-top: 0.3rem;">26 August 2000</div>
+          </div>
+
+          <div class="star-map-container" id="poster-sky-circle">
+            <!-- Rendered dynamically by JS -->
+          </div>
+
+          <div id="star-hover-tooltip" class="star-tooltip" style="display: none;"></div>
+
+          <div style="text-align: center; width: 100%; padding-bottom: 0.5rem;">
+            <div id="poster-render-location" style="font-size: 1rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">QUITO, ECUADOR</div>
+            <div id="poster-render-time-coords" style="font-size: 0.8rem; opacity: 0.75; letter-spacing: 0.05em; margin-top: 0.2rem;">21:09 · 0.18° S, 78.47° W</div>
+            <p id="poster-render-quote" style="font-style: italic; font-size: 0.9rem; margin-top: 0.6rem; opacity: 0.95; padding: 0 1rem;">“A moment written in the stars.”</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ASTRONOMICAL INFO MODAL -->
+  <div id="astro-modal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 2rem; border-radius: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; border-b: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.75rem;">
+        <h3 style="font-family: var(--font-serif); font-size: 1.35rem; color: #FFFFFF; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="moon" style="width: 20px; height: 20px; color: #D4AF37;"></i>
+          <span>Sky Details & Astronomy</span>
+        </h3>
+        <button id="close-astro-modal" class="btn-secondary" style="padding: 0.3rem 0.6rem;"><i data-lucide="x" style="width: 16px; height: 16px;"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="glass-card" style="padding: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.85rem; color: #9CA3AF;">Moon Phase</span>
+          <span id="astro-moon-phase" style="font-size: 0.95rem; color: #E5C07B; font-weight: 600;">Waning Crescent</span>
+        </div>
+
+        <div class="glass-card" style="padding: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.85rem; color: #9CA3AF;">Local Sidereal Time</span>
+          <span id="astro-lst" style="font-size: 0.95rem; color: #FFFFFF; font-weight: 500;">--</span>
+        </div>
+
+        <div class="glass-card" style="padding: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.85rem; color: #9CA3AF;">Visible Planets</span>
+          <span id="astro-planets" style="font-size: 0.9rem; color: #FFFFFF;">Jupiter, Saturn</span>
+        </div>
+
+        <div class="glass-card" style="padding: 1rem;">
+          <span style="font-size: 0.85rem; color: #9CA3AF; display: block; margin-bottom: 0.5rem;">Overhead Constellations</span>
+          <div id="astro-constellations-list" style="font-size: 0.85rem; color: #E5E7EB; line-height: 1.5;">
+            Orion, Ursa Major, Scorpius, Cygnus
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECRET CUSTOMIZATION & EXPORT MODAL (Triggered by 3 clicks on poster) -->
+  <div id="export-modal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1.25rem;">
+    <div class="glass-panel" style="width: 100%; max-width: 520px; padding: 2rem; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.4); max-height: 90vh; overflow-y: auto;">
+      
+      <!-- Header -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.85rem;">
+        <div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.35rem; color: #FFFFFF; display: flex; align-items: center; gap: 0.6rem;">
+            <i data-lucide="sliders" style="width: 20px; height: 20px; color: #D4AF37;"></i>
+            <span>Ajustes Secretos & Descarga</span>
+          </h3>
+          <p style="font-size: 0.8rem; color: #9CA3AF; margin-top: 0.15rem;">Personaliza los detalles visuales del mapa estelar.</p>
+        </div>
+        <button id="close-export-modal" class="btn-secondary" style="padding: 0.35rem 0.65rem; border-radius: 50%;"><i data-lucide="x" style="width: 16px; height: 16px;"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- SECTION 1: VISUAL TOGGLES -->
+        <div>
+          <label class="form-label" style="color: #E5C07B; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="eye" style="width: 14px; height: 14px;"></i> 1. Personalización del Mapa
+          </label>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+            
+            <!-- Toggle Frame -->
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #E5E7EB; cursor: pointer;">
+              <span>Quitar Marco Exterior del Cuadro</span>
+              <input type="checkbox" id="secret-toggle-frame" style="accent-color: #D4AF37; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Toggle All Star & Planet Names -->
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #E5E7EB; cursor: pointer;">
+              <span>Ocultar Nombres de Estrellas, Luna y Planetas</span>
+              <input type="checkbox" id="secret-toggle-all-star-names" checked style="accent-color: #D4AF37; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Toggle Constellation Names -->
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #E5E7EB; cursor: pointer;">
+              <span>Mostrar Nombres de Constelaciones</span>
+              <input type="checkbox" id="secret-toggle-names" style="accent-color: #D4AF37; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Toggle Constellation Lines -->
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #E5E7EB; cursor: pointer;">
+              <span>Mostrar Líneas de Constelaciones</span>
+              <input type="checkbox" id="secret-toggle-lines" checked style="accent-color: #D4AF37; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Toggle Planets -->
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #E5E7EB; cursor: pointer;">
+              <span>Mostrar Planetas y Luna</span>
+              <input type="checkbox" id="secret-toggle-planets" checked style="accent-color: #D4AF37; width: 18px; height: 18px;">
+            </label>
+
+          </div>
+        </div>
+
+        <!-- SECTION 2: TEXT CUSTOMIZATION -->
+        <div>
+          <label class="form-label" style="color: #E5C07B; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="type" style="width: 14px; height: 14px;"></i> 2. Edición de Textos del Cuadro
+          </label>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+            
+            <div>
+              <span style="font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Título Principal</span>
+              <input type="text" id="secret-input-title" class="form-input" value="THE SKY ABOVE QUITO">
+            </div>
+
+            <div>
+              <span style="font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Subtítulo / Fecha</span>
+              <input type="text" id="secret-input-subtitle" class="form-input" value="26 August 2000">
+            </div>
+
+            <div>
+              <span style="font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Ubicación</span>
+              <input type="text" id="secret-input-location" class="form-input" value="QUITO, ECUADOR">
+            </div>
+
+            <div>
+              <span style="font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Frase / Dedicatoria Personal</span>
+              <textarea id="secret-input-quote" class="form-input" rows="2">“A moment written in the stars.”</textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECTION 3: PRINT SIZE & FORMAT -->
+        <div>
+          <label class="form-label" style="color: #E5C07B; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="printer" style="width: 14px; height: 14px;"></i> 3. Tamaño de Impresión & Formato
+          </label>
+
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Tamaño de Papel</span>
+              <select id="export-paper-size" class="form-input">
+                <option value="13x18" selected>13 × 18 cm (Portarretratos 5×7 in)</option>
+                <option value="A4">A4 (210 × 297 mm)</option>
+                <option value="A3">A3 (297 × 420 mm)</option>
+                <option value="Letter">US Letter (8.5 × 11 in)</option>
+                <option value="Square">Cuadrado (250 × 250 mm)</option>
+              </select>
+            </div>
+
+            <div>
+              <span style="font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.3rem;">Orientación</span>
+              <select id="export-orientation" class="form-input">
+                <option value="portrait" selected>Vertical (Portrait)</option>
+                <option value="landscape">Horizontal (Landscape)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: DOWNLOAD BUTTONS -->
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.25rem;">
+          <button id="confirm-export-pdf" class="btn-gold" style="width: 100%; justify-content: center; font-size: 0.95rem; min-height: 44px;">
+            <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+            <span>Descargar PDF Ultra-HD (600 DPI Nítido)</span>
+          </button>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <button id="secret-export-svg" class="btn-secondary" style="font-size: 0.8rem; justify-content: center;" title="Vector puro 100% sin píxeles">
+              <i data-lucide="file-code" style="width: 14px; height: 14px; color: #D4AF37;"></i>
+              <span>Vector SVG Infinito</span>
+            </button>
+
+            <button id="secret-export-png" class="btn-secondary" style="font-size: 0.8rem; justify-content: center;">
+              <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+              <span>Imagen PNG Ultra HD</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification for secret triple click -->
+  <div id="secret-toast" style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(212, 175, 55, 0.95); color: #09090B; padding: 0.75rem 1.5rem; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 200; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 0.5rem; pointer-events: none;">
+    <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+    <span>Secret Unlocked: Save Poster Mode</span>
+  </div>
+
+  <!-- App Main Logic JavaScript (ES Module) -->
+  <script type="module" src="js/app.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
